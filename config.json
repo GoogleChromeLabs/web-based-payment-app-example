@@ -1,0 +1,4 @@
+{
+  "GCLOUD_PROJECT": "payment-handler-example2",
+  "DATA_BACKEDND": "datastore"
+}
