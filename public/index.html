@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>BobPay</title>
+    <title>BobBucks</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -35,7 +35,7 @@
         }
     </style>
 
-    <!-- BobPay web app manifest -->
+    <!-- BobBucks web app manifest -->
     <link rel="manifest" href="/pay/manifest.json">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -51,27 +51,27 @@
      * Utilities for registering/unregistering the Payment App service worker.
      */
 
-    const SERVICE_WORKER_URL = '/pay/sw-bobpay.js'
+    const SERVICE_WORKER_URL = '/pay/sw-bobbucks.js'
 
-    // Adds the BobPay default instrument.
+    // Adds the BobBucks default instrument.
     function addInstruments(registration) {
-      registration.paymentManager.userHint = "test@bobpay.xyz";
+      registration.paymentManager.userHint = "test@bobbucks.dev";
       return Promise.all([
         registration.paymentManager.instruments.set(
             "dc2de27a-ca5e-4fbd-883e-b6ded6c69d4f",
             {
               name: "My Bob Pay Account",
               icons: [{
-                src:"/pay/bobpay.png",
+                src:"/pay/bobbucks.png",
                 sizes:"32x32",
                 type:"image/png"}
               ],
-              method: "https://bobpay.xyz/pay"
+              method: "https://bobbucks.dev/pay"
             }),
         registration.paymentManager.instruments.set(
             "new-card",
             {
-                name: "Add a new card to BobPay",
+                name: "Add a new card to BobBucks",
                 method: "basic-card",
                 capabilities: {
                     supportedNetworks: ["visa", "mastercard", "amex", "discover"],
@@ -83,8 +83,8 @@
 
     // Shows/hides the webpage controls for installing/removing the service
     // worker.
-    function showBobPayStatus(enabled) {
-        showBobPayError("");
+    function showBobBucksStatus(enabled) {
+        showBobBucksError("");
         var buttonText = enabled ?
                 'Web App Installed &#9989;' : 'Install Web App';
         document.getElementById("installbutton").innerHTML = buttonText;
@@ -96,8 +96,8 @@
     }
 
     // Shows/clears an error related to the service worker installation.
-    function showBobPayError(errorMessage) {
-        document.getElementById('bobpayerror').innerHTML = errorMessage;
+    function showBobBucksError(errorMessage) {
+        document.getElementById('bobbuckserror').innerHTML = errorMessage;
     }
 
     // Registers the payment app service worker by installing the default
@@ -107,15 +107,15 @@
         if(!registration.paymentManager) {
           // Payment app capability not available, unregister right away.
           registration.unregister().then((success) => {});
-          showBobPayError('Payment app capability not present. Enable flags?');
+          showBobBucksError('Payment app capability not present. Enable flags?');
           return;
         }
 
         addInstruments(registration).then(function() {
-            showBobPayStatus(/*enabled=*/true);
+            showBobBucksStatus(/*enabled=*/true);
         });
       }).catch((error) => {
-        showBobPayError(error);
+        showBobBucksError(error);
       });
     }
 
@@ -124,7 +124,7 @@
     function unregisterPaymentAppServiceWorker() {
       navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL).then(function(registration) {
         registration.unregister().then((success) => {
-            showBobPayStatus(!success);
+            showBobBucksStatus(!success);
         });
     });
     }
@@ -132,18 +132,18 @@
     // When page is loaded, checks for the existence of the service worker.
     navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL).then(function(registration) {
         if (registration) {
-            // BobPay service worker is installed.
+            // BobBucks service worker is installed.
             if (registration.paymentManager) {
                 // Always update the installed service worker.
                 registration.update();
             } else {
-                // Not supposed to have a BobPay service worker if there is no
+                // Not supposed to have a BobBucks service worker if there is no
                 // paymentManager available (feature is now off?). Remove the
                 // service worker.
                 unregisterPaymentAppServiceWorker();
             }
         }
-        showBobPayStatus(!!registration);
+        showBobBucksStatus(!!registration);
     });
     </script>
 
@@ -158,7 +158,7 @@
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
                     <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
                 </button>
-                <a class="navbar-brand page-scroll" href="#page-top">BobPay</a>
+                <a class="navbar-brand page-scroll" href="#page-top">BobBucks</a>
             </div>
 
             <!-- Collect the nav links, forms, and other content for toggling -->
@@ -183,7 +183,7 @@
                 <div class="col-sm-7">
                     <div class="header-content">
                         <div class="header-content-inner">
-                            <h1>BobPay is a sample payment app that works with Payment Request API</h1>
+                            <h1>BobBucks is a sample payment app that works with Payment Request API</h1>
                             <a href="#download" class="btn btn-outline btn-xl page-scroll">Learn more</a>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                         <div class="device-mockup galaxy_s5 black portrait">
                             <div class="device">
                                 <div class="screen">
-                                    <img src="img/bobpay_android.png" class="img-responsive" alt="">
+                                    <img src="img/bobbucks_android.png" class="img-responsive" alt="">
                                 </div>
                             </div>
                         </div>
@@ -207,23 +207,23 @@
         <div class="container">
             <div class="row badges text-left">
                 <div class="col-md-6">
-                    <h3 class="text-center">Bobpay native payment app</h3>
+                    <h3 class="text-center">Bobbucks native payment app</h3>
                     <p class="badge-link"><img src="img/download.svg" alt="">&nbsp;<a href="https://drive.google.com/open?id=0B3xzZ-vFr2LRTHVtNnItZmlGZzQ">Download the APK</a</p>
                     <p class="badge-link"><img src="img/source.svg" alt="">&nbsp;<a href="https://drive.google.com/open?id=0B3xzZ-vFr2LRSGVlN2o1bXBLODg">See the source code</a></p>
                     <p class="badge-link"><img src="img/google_docs.svg" alt="">&nbsp;<a href="https://docs.google.com/document/d/1izV4uC-tiRJG3JLooqY3YRLU22tYOsLTNq0P_InPJeE/edit">Learn how to build your own native payment app</a></p>
                 </div>
                 <div class="col-md-6">
-                    <h3 class="text-center">Bobpay web payment app</h3>
+                    <h3 class="text-center">Bobbucks web payment app</h3>
                     <p id="installed" class="badge-link invisible"><img src="img/uninstall.svg" alt="">&nbsp;<a href="#uninstall" onclick="unregisterPaymentAppServiceWorker()">
-                    Uninstall BobPay Web Payment App</a>
+                    Uninstall BobBucks Web Payment App</a>
                     </p>
                     <p id="notinstalled" class="badge-link invisible"><img src="img/download.svg" alt="">&nbsp;<a href="#installit" onclick="registerPaymentAppServiceWorker()">
-                    Install BobPay Web Payment App</a>
+                    Install BobBucks Web Payment App</a>
                     </p>
-                    <p class="badge-link"><img src="img/source.svg" alt="">&nbsp;<a href="https://github.com/madmath/payment-request-show/tree/master/bobpay/public/pay">See the source code</a></p>
+                    <p class="badge-link"><img src="img/source.svg" alt="">&nbsp;<a href="https://github.com/madmath/payment-request-show/tree/master/bobbucks/public/pay">See the source code</a></p>
                     <p class="badge-link"><img src="img/google_docs.svg" alt="">&nbsp;<a href="https://docs.google.com/document/d/1wM9b3szNH4-w0tpIefjLYSGNtyjLr31Q4ARNTB52bJ0/edit">Learn how to build your own web based payment app.</a></p>
                 </div>
-                <p id="bobpayerror" class="error-message"></p>
+                <p id="bobbuckserror" class="error-message"></p>
             </div>
         </div>
     </section>

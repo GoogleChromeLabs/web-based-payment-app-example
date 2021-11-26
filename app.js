@@ -22,7 +22,7 @@ let app = express();
 app.use(function(req, res, next) {
   res.status(200).links({
     'payment-method-manifest':
-        'https://bobpay.xyz/pay/payment-manifest.json',
+        'https://bobbucks.dev/pay/payment-manifest.json',
     });
     return next();
 });

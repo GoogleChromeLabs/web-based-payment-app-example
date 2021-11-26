@@ -3,11 +3,11 @@
         "apps": [],
         "details": [
             {
-                "appID": "EQHXZ8M8AV.com.google.Bobpay.dev",
+                "appID": "EQHXZ8M8AV.com.google.Bobbucks.dev",
                 "paths": [ "/pay"]
             },
             {
-                "appID": "4ANB9W7R3P.com.google.Bobpay.enterprise",
+                "appID": "4ANB9W7R3P.com.google.Bobbucks.enterprise",
                 "paths": [ "/pay" ]
             }
         ]

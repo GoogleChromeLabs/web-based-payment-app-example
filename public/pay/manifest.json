@@ -1,19 +1,19 @@
 {
-  "name": "Pay with BobPay",
-  "short_name": "BobPay",
+  "name": "Pay with BobBucks",
+  "short_name": "BobBucks",
   "icons": [{
   	"src": "tree.png",
   	"sizes": "48x48",
   	"type": "image/png"
   }],
   "serviceworker": {
-    "src": "sw-bobpay.js",
+    "src": "sw-bobbucks.js",
     "use_cache": false
   },
   "prefer_related_applications": true,
   "related_applications": [{
       "platform": "play",
-      "id": "com.bobpay",
+      "id": "com.bobbucks",
       "min_version": "1",
       "fingerprints": [{
           "type": "sha256_cert",

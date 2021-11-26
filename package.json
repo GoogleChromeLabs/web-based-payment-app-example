@@ -1,8 +1,11 @@
 {
-  "name": "BobPay",
-  "description": "BobPay, the simplest payment app",
+  "name": "BobBucks",
+  "description": "BobBucks, the simplest payment app",
   "version": "1.0.0",
   "author": "Google Inc.",
+  "engines": {
+    "node": ">10"
+  },
   "contributors": [
     {
       "name": "Rouslan Solomakhin",
