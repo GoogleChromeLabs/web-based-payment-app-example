@@ -1,4 +1,4 @@
 {
-  "GCLOUD_PROJECT": "payment-handler-example2",
+  "GCLOUD_PROJECT": "payment-request-and-bobpay",
   "DATA_BACKEDND": "datastore"
 }
