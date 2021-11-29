@@ -53,8 +53,8 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin({
       patterns: [{
-        from: path.join(__dirname, 'public', 'style.css'),
-        to: path.join(dst, 'style.css')
+        from: path.join(__dirname, 'public'),
+        to: path.join(dst)
       }]
     // },{
     //   from: path.join(src, 'img'),

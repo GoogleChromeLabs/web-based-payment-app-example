@@ -5,7 +5,6 @@
   "main": "server.js",
   "scripts": {
     "build": "rm -rf dist && webpack",
-    "gcp-build": "npm run build",
     "deploy": "gcloud app deploy app.yaml --project=payment-request-and-bobpay",
     "start": "node server.js"
   },
