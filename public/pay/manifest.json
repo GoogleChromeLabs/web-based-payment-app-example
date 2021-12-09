@@ -13,7 +13,7 @@
   "prefer_related_applications": true,
   "related_applications": [{
       "platform": "play",
-      "id": "com.bobbucks",
+      "id": "dev.bobbucks",
       "min_version": "1",
       "fingerprints": [{
           "type": "sha256_cert",
