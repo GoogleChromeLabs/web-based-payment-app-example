@@ -26,6 +26,15 @@ app.use(function(req, res, next) {
     });
     return next();
 });
+
+// Serve the payment-manifest.json file with its own mime type.
+app.use(function(req, res, next) {
+  if (req.path.endsWith('payment-manifest.json')) {
+    res.set('Content-Type', 'application/x-payment-manifest');
+  }
+  return next();
+});
+
 // We are mostly a static website.
 app.use(express.static('public'));
 
