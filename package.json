@@ -4,7 +4,7 @@
   "version": "1.0.1",
   "author": "Google Inc.",
   "engines": {
-    "node": ">10"
+    "node": ">20"
   },
   "contributors": [
     {
@@ -18,7 +18,8 @@
   ],
   "license": "Apache Version 2.0",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "deploy": "gcloud app deploy --project=payment-request-and-bobpay ./app.yaml"
   },
   "dependencies": {
     "express": "^4.16.3"
