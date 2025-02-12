@@ -191,6 +191,15 @@ navigator.serviceWorker.addEventListener('message', e => {
 });
 navigator.serviceWorker.controller.postMessage('payment_app_window_ready');
 
+function pingServiceWorkerAfterDelay() {
+  window.setTimeout(() => {
+    navigator.serviceWorker.controller.postMessage('ping');
+    pingServiceWorkerAfterDelay();
+  }, 60000);  // 1 minute.
+}
+
+pingServiceWorkerAfterDelay();
+
 function cancel() {
   if(!paymentRequestClient) return;
 

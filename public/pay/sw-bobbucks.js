@@ -29,6 +29,10 @@ self.addEventListener('paymentrequest', function(e) {
 });
 
 self.addEventListener('message', listener = function(e) {
+  if (e.data == "ping") {
+    return;
+  }
+
   if (e.data == "payment_app_window_ready") {
     sendPaymentRequest();
     return;
