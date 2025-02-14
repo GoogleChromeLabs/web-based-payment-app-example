@@ -191,6 +191,12 @@ navigator.serviceWorker.addEventListener('message', e => {
 });
 navigator.serviceWorker.controller.postMessage('payment_app_window_ready');
 
+function pingServiceWorkerToKeepItAlive() {
+  navigator.serviceWorker.controller.postMessage('ping');
+}
+
+const ping = setInterval(pingServiceWorkerToKeepItAlive, 60000);
+
 function cancel() {
   if(!paymentRequestClient) return;
 
