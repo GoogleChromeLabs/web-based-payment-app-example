@@ -53,34 +53,6 @@
 
     const SERVICE_WORKER_URL = '/pay/sw-bobbucks.js'
 
-    // Adds the BobBucks default instrument.
-    function addInstruments(registration) {
-      registration.paymentManager.userHint = "test@bobbucks.dev";
-      return Promise.all([
-        registration.paymentManager.instruments.set(
-            "dc2de27a-ca5e-4fbd-883e-b6ded6c69d4f",
-            {
-              name: "My Bob Pay Account",
-              icons: [{
-                src:"/pay/bobbucks.png",
-                sizes:"32x32",
-                type:"image/png"}
-              ],
-              method: "https://bobbucks.dev/pay"
-            }),
-        registration.paymentManager.instruments.set(
-            "new-card",
-            {
-                name: "Add a new card to BobBucks",
-                method: "basic-card",
-                capabilities: {
-                    supportedNetworks: ["visa", "mastercard", "amex", "discover"],
-                    supportedTypes: ["credit", "debit", "prepaid"]
-                }
-            }),
-      ]);
-    };
-
     // Shows/hides the webpage controls for installing/removing the service
     // worker.
     function showBobBucksStatus(enabled) {
@@ -100,27 +72,7 @@
         document.getElementById('bobbuckserror').innerHTML = errorMessage;
     }
 
-    // Registers the payment app service worker by installing the default
-    // instruments.
-    function registerPaymentAppServiceWorker() {
-      navigator.serviceWorker.register(SERVICE_WORKER_URL).then(function(registration) {
-        if(!registration.paymentManager) {
-          // Payment app capability not available, unregister right away.
-          registration.unregister().then((success) => {});
-          showBobBucksError('Payment app capability not present. Enable flags?');
-          return;
-        }
-
-        addInstruments(registration).then(function() {
-            showBobBucksStatus(/*enabled=*/true);
-        });
-      }).catch((error) => {
-        showBobBucksError(error);
-      });
-    }
-
-    // Registers the payment app service worker by installing the default
-    // instruments.
+    // Unregisters the payment app service
     function unregisterPaymentAppServiceWorker() {
       navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL).then(function(registration) {
         registration.unregister().then((success) => {
@@ -217,8 +169,10 @@
                     <p id="installed" class="badge-link invisible"><img src="img/uninstall.svg" alt="">&nbsp;<a href="#uninstall" onclick="unregisterPaymentAppServiceWorker()">
                     Uninstall BobBucks Web Payment App</a>
                     </p>
-                    <p id="notinstalled" class="badge-link invisible"><img src="img/download.svg" alt="">&nbsp;<a href="#installit" onclick="registerPaymentAppServiceWorker()">
-                    Install BobBucks Web Payment App</a>
+                    <p id="notinstalled" class="badge-link invisible"><img src="img/download.svg" alt="">&nbsp;
+                    Web Payment Apps are installed just-in-time (JIT) during the first payment request.
+                    Install BobBucks by navigating to a <a href="https://rsolomakhin.github.io/pr/bob/">Sample Merchant for BobBucks</a>
+                    and initiating a demo payment request. No actual payment will be processed on the demo page.
                     </p>
                     <p class="badge-link"><img src="img/source.svg" alt="">&nbsp;<a href="https://github.com/GoogleChromeLabs/web-based-payment-app-example/tree/main/public/pay">See the source code</a></p>
                     <p class="badge-link"><img src="img/webdev.png" alt="">&nbsp;<a href="https://web.dev/web-based-payment-apps-overview/">Learn how to build your own web based payment app.</a></p>
