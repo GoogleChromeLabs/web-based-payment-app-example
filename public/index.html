@@ -45,6 +45,60 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    <!-- Register Payment App SW -->
+    <script>
+    /**
+     * Utilities for registering/unregistering the Payment App service worker.
+     */
+
+    const SERVICE_WORKER_URL = '/pay/sw-bobbucks.js'
+
+    // Shows/hides the webpage controls for installing/removing the service
+    // worker.
+    function showBobBucksStatus(enabled) {
+        showBobBucksError("");
+        var buttonText = enabled ?
+                'Web App Installed &#9989;' : 'Install Web App';
+        document.getElementById("installbutton").innerHTML = buttonText;
+
+        document.getElementById("installed").classList.toggle(
+                'invisible', !enabled);
+        document.getElementById("notinstalled").classList.toggle(
+                'invisible', enabled);
+    }
+
+    // Shows/clears an error related to the service worker installation.
+    function showBobBucksError(errorMessage) {
+        document.getElementById('bobbuckserror').innerHTML = errorMessage;
+    }
+
+    // Unregisters the payment app service
+    function unregisterPaymentAppServiceWorker() {
+      navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL).then(function(registration) {
+        registration.unregister().then((success) => {
+            showBobBucksStatus(!success);
+        });
+    });
+    }
+
+    // When page is loaded, checks for the existence of the service worker.
+    navigator.serviceWorker.getRegistration(SERVICE_WORKER_URL).then(function(registration) {
+        if (registration) {
+            // BobBucks service worker is installed.
+            if (registration.paymentManager) {
+                // Always update the installed service worker.
+                registration.update();
+            } else {
+                // Not supposed to have a BobBucks service worker if there is no
+                // paymentManager available (feature is now off?). Remove the
+                // service worker.
+                unregisterPaymentAppServiceWorker();
+            }
+        }
+        showBobBucksStatus(!!registration);
+    });
+    </script>
+
 </head>
 
 <body id="page-top">
@@ -64,6 +118,9 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li>
                         <a class="page-scroll" href="#download">Download App</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" id="installbutton" href="#download">Loading...</a>
                     </li>
                 </ul>
             </div>
@@ -112,8 +169,10 @@
                     <p id="installed" class="badge-link invisible"><img src="img/uninstall.svg" alt="">&nbsp;<a href="#uninstall" onclick="unregisterPaymentAppServiceWorker()">
                     Uninstall BobBucks Web Payment App</a>
                     </p>
-                    <p id="notinstalled" class="badge-link invisible"><img src="img/download.svg" alt="">&nbsp;<a href="#installit" onclick="registerPaymentAppServiceWorker()">
-                    Install BobBucks Web Payment App</a>
+                    <p id="notinstalled" class="badge-link invisible"><img src="img/download.svg" alt="">&nbsp;
+                    Web Payment Apps are installed just-in-time (JIT) during the first payment request.
+                    Install BobBucks by navigating to a <a href="https://rsolomakhin.github.io/pr/bob/">Sample Merchant for BobBucks</a>
+                    and initiating a demo payment request. No actual payment will be processed on the demo page.
                     </p>
                     <p class="badge-link"><img src="img/source.svg" alt="">&nbsp;<a href="https://github.com/GoogleChromeLabs/web-based-payment-app-example/tree/main/public/pay">See the source code</a></p>
                     <p class="badge-link"><img src="img/webdev.png" alt="">&nbsp;<a href="https://web.dev/web-based-payment-apps-overview/">Learn how to build your own web based payment app.</a></p>
