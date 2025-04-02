@@ -35,6 +35,17 @@ app.use(function(req, res, next) {
   return next();
 });
 
+// Discourage client-side caching of manifest files, so that clients can pick
+// up changes as far as possible.
+app.use(function(req, res, next) {
+  if (req.path.endsWith('manifest.json')) {
+    res.setHeader("Surrogate-Control", "no-store");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Expires", "0");
+  }
+  return next();
+});
+
 // We are mostly a static website.
 app.use(express.static('public'));
 
