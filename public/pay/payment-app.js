@@ -80,6 +80,24 @@
     navigator.serviceWorker.controller.postMessage(SW_MSG_UPDATE_MERCHANT);
   }
 
+  function triggerInternalError(evt) {
+    evt.preventDefault();
+    if (!paymentRequestClient) {
+      // payment request client may not have been set yet if the button is clicked early.
+      // This is not an error, so we return silently.
+      return;
+    }
+    if (!navigator.serviceWorker.controller) {
+      console.error('Service Worker controller not found. Cannot send internal error message.');
+      return;
+    }
+
+    // See https://github.com/w3c/web-based-payment-handler/pull/429 for the proposed
+    // error type to indicate internal payment app error.
+    paymentRequestClient.postMessage(new DOMException("Internal app error", "OperationError"));
+    window.close();
+  }
+
   function cancel() {
     if (!paymentRequestClient) {
       // payment request client may not have been set yet if the user cancels early.
@@ -106,6 +124,7 @@
 
     document.getElementById('cancel').addEventListener('click', cancel);
     document.getElementById('update-with-button').addEventListener('click', updateMerchant);
+    document.getElementById('trigger-internal-error-button').addEventListener('click', triggerInternalError);
   }
 
   init();
