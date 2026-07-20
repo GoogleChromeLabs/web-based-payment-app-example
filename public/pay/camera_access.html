@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BobBucks Camera Access</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+
+    <!-- Theme CSS -->
+    <link href="/css/new-age.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container" id="content-container">
+      <h2>Grant Camera Permission</h2>
+      <p>Click the button below to grant camera access to BobBucks.</p>
+      <button id="grant-button" class="btn btn-primary">Grant Camera Permission</button>
+      <div id="status" class="alert alert-info" style="margin-top: 15px;">Ready to request permission.</div>
+    </div>
+
+    <script>
+      (function() {
+        const statusDiv = document.getElementById('status');
+        const grantBtn = document.getElementById('grant-button');
+
+        function updateStatus(msg, className) {
+          statusDiv.className = 'alert ' + (className || 'alert-info');
+          statusDiv.innerText = msg;
+        }
+
+        async function checkPermission() {
+          if (navigator.permissions && navigator.permissions.query) {
+            try {
+              const status = await navigator.permissions.query({ name: 'camera' });
+              if (status.state === 'granted') {
+                updateStatus('Camera permission already granted! Closing window...', 'alert-success');
+                setTimeout(() => window.close(), 1000);
+              }
+            } catch (e) {
+              console.log('Permission query error:', e);
+            }
+          }
+        }
+
+        async function requestCamera() {
+          updateStatus('Requesting camera access...', 'alert-info');
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop());
+            updateStatus('Permission granted! Closing window...', 'alert-success');
+            setTimeout(() => window.close(), 1200);
+          } catch (err) {
+            updateStatus('Permission denied or failed: ' + err.name, 'alert-danger');
+            setTimeout(() => window.close(), 2000);
+          }
+        }
+
+        grantBtn.addEventListener('click', requestCamera);
+        checkPermission();
+      })();
+    </script>
+  </body>
+</html>
