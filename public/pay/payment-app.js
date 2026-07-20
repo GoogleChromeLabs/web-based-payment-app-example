@@ -177,7 +177,7 @@
 
   function openCameraAccessPopup(evt) {
     if (evt) evt.preventDefault();
-    const popup = window.open('/public/pay/camera_access.html', 'camera_access_popup', 'width=500,height=400');
+    const popup = window.open('/pay/camera_access.html', 'camera_access_popup', 'width=500,height=400');
     if (popup) {
       const timer = setInterval(() => {
         if (popup.closed) {
