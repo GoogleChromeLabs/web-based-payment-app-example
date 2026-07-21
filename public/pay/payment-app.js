@@ -100,112 +100,35 @@
 
   function cancel() {
     if (!paymentRequestClient) {
-      // payment request client may not have been set yet if the user cancels early.
-      // This is not an error, so we return silently.
+      window.close();
       return;
     }
-    if (!navigator.serviceWorker.controller) {
-      console.error('Service Worker controller not found. Cannot send cancellation message.');
-      return;
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage('The payment request is cancelled by user');
     }
-    paymentRequestClient.postMessage('The payment request is cancelled by user');
     window.close();
   }
 
-  function updateCameraPermissionUI(state) {
-    const statusElem = document.getElementById('camera-permission-status');
-    const popupLink = document.getElementById('request-camera-popup-link');
-    if (!statusElem) return;
-
-    statusElem.style.display = 'block';
-    if (state === 'granted') {
-      statusElem.className = 'alert alert-success';
-      statusElem.innerHTML = 'Camera permission: <strong>granted</strong>';
-      if (popupLink) popupLink.style.display = 'none';
-    } else if (state === 'prompt') {
-      statusElem.className = 'alert alert-warning';
-      statusElem.innerHTML = 'Camera permission: <strong>not granted (prompt required)</strong>';
-      if (popupLink) popupLink.style.display = 'inline-block';
-    } else if (state === 'denied') {
-      statusElem.className = 'alert alert-danger';
-      statusElem.innerHTML = 'Camera permission: <strong>denied</strong>';
-      if (popupLink) popupLink.style.display = 'inline-block';
-    } else {
-      statusElem.className = 'alert alert-info';
-      statusElem.innerHTML = `Camera permission: <strong>${state}</strong>`;
-    }
-  }
-
-  async function checkCameraPermission() {
-    if (navigator.permissions && navigator.permissions.query) {
-      try {
-        const permissionStatus = await navigator.permissions.query({ name: 'camera' });
-        updateCameraPermissionUI(permissionStatus.state);
-        permissionStatus.onchange = () => {
-          updateCameraPermissionUI(permissionStatus.state);
-        };
-      } catch (err) {
-        console.error('Camera permission query failed:', err);
-        updateCameraPermissionUI('unavailable');
-      }
-    } else {
-      updateCameraPermissionUI('unsupported');
-    }
-  }
-
-  async function startCamera(evt) {
-    if (evt) evt.preventDefault();
-    const logElem = document.getElementById('camera-log');
-    const videoElem = document.getElementById('camera-video');
-    logElem.style.display = 'none';
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoElem.srcObject = stream;
-      videoElem.style.display = 'block';
-      logElem.className = 'alert alert-success';
-      logElem.innerHTML = 'Camera started successfully!';
-      logElem.style.display = 'block';
-    } catch (err) {
-      console.error('getUserMedia error:', err);
-      videoElem.style.display = 'none';
-      logElem.className = 'alert alert-danger';
-      logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
-      logElem.style.display = 'block';
-    }
-  }
-
-  function openCameraAccessPopup(evt) {
-    if (evt) evt.preventDefault();
-    const popup = window.open('/pay/camera_access.html', 'camera_access_popup', 'width=500,height=400');
-    if (popup) {
-      const timer = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(timer);
-          checkCameraPermission();
-        }
-      }, 500);
-    }
-  }
-
   function init() {
-    if (!navigator.serviceWorker.controller) {
-      console.error('Service Worker controller not found on init. Cannot send app ready message.');
-      return;
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      navigator.serviceWorker.controller.postMessage(SW_MSG_APP_READY);
+      setInterval(pingServiceWorkerToKeepItAlive, PING_INTERVAL_MS);
+    } else {
+      console.warn('Service Worker controller not active. Running in standalone mode.');
+      populatePaymentInstrumentsList();
     }
 
-    navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
-    navigator.serviceWorker.controller.postMessage(SW_MSG_APP_READY);
-    setInterval(pingServiceWorkerToKeepItAlive, PING_INTERVAL_MS);
+    const cancelBtn = document.getElementById('cancel');
+    if (cancelBtn) cancelBtn.addEventListener('click', cancel);
 
-    document.getElementById('cancel').addEventListener('click', cancel);
-    document.getElementById('update-with-button').addEventListener('click', updateMerchant);
-    document.getElementById('trigger-internal-error-button').addEventListener('click', triggerInternalError);
+    const updateBtn = document.getElementById('update-with-button');
+    if (updateBtn) updateBtn.addEventListener('click', updateMerchant);
 
-    checkCameraPermission();
-    document.getElementById('start-camera-button').addEventListener('click', startCamera);
-    document.getElementById('request-camera-popup-link').addEventListener('click', openCameraAccessPopup);
+    const errBtn = document.getElementById('trigger-internal-error-button');
+    if (errBtn) errBtn.addEventListener('click', triggerInternalError);
   }
 
   init();
+})();
 })();

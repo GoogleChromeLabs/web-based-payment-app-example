@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BobBucks Camera Access Test</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Muli" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.10/css/all.css" integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg" crossorigin="anonymous">
+
+    <!-- Theme CSS -->
+    <link href="/css/new-age.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container" id="content-container">
+      <h2>Camera Access Test</h2>
+
+      <div id="camera-permission-status" class="alert alert-info" style="margin-top: 15px;">
+        Camera permission: <strong>checking...</strong>
+      </div>
+
+      <div style="margin-top: 15px;">
+        <button id="start-camera-button" class="btn btn-primary">Start Camera</button>
+        <a href="#" id="request-camera-popup-link" class="btn btn-link" style="display: none;">Grant Camera Access in Popup Window</a>
+      </div>
+
+      <div id="camera-log" class="alert alert-warning" style="display: none; margin-top: 15px;"></div>
+
+      <div style="margin-top: 15px;">
+        <video id="camera-video" width="320" height="240" autoplay playsinline style="display: none; border: 1px solid #ccc; border-radius: 4px;"></video>
+      </div>
+
+      <div style="margin-top: 25px;">
+        <a href="/pay/" class="btn btn-default">&larr; Back to Payment Handler</a>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const statusElem = document.getElementById('camera-permission-status');
+        const popupLink = document.getElementById('request-camera-popup-link');
+        const startBtn = document.getElementById('start-camera-button');
+        const logElem = document.getElementById('camera-log');
+        const videoElem = document.getElementById('camera-video');
+
+        function updateCameraPermissionUI(state) {
+          if (!statusElem) return;
+          statusElem.style.display = 'block';
+          if (state === 'granted') {
+            statusElem.className = 'alert alert-success';
+            statusElem.innerHTML = 'Camera permission: <strong>granted</strong>';
+            if (popupLink) popupLink.style.display = 'none';
+          } else if (state === 'prompt') {
+            statusElem.className = 'alert alert-warning';
+            statusElem.innerHTML = 'Camera permission: <strong>not granted (prompt required)</strong>';
+            if (popupLink) popupLink.style.display = 'inline-block';
+          } else if (state === 'denied') {
+            statusElem.className = 'alert alert-danger';
+            statusElem.innerHTML = 'Camera permission: <strong>denied</strong>';
+            if (popupLink) popupLink.style.display = 'inline-block';
+          } else {
+            statusElem.className = 'alert alert-info';
+            statusElem.innerHTML = `Camera permission: <strong>${state}</strong>`;
+          }
+        }
+
+        async function checkCameraPermission() {
+          if (navigator.permissions && navigator.permissions.query) {
+            try {
+              const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+              updateCameraPermissionUI(permissionStatus.state);
+              permissionStatus.onchange = () => {
+                updateCameraPermissionUI(permissionStatus.state);
+              };
+            } catch (err) {
+              console.error('Camera permission query failed:', err);
+              updateCameraPermissionUI('unavailable');
+            }
+          } else {
+            updateCameraPermissionUI('unsupported');
+          }
+        }
+
+        async function startCamera(evt) {
+          if (evt) evt.preventDefault();
+          logElem.style.display = 'none';
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElem.srcObject = stream;
+            videoElem.style.display = 'block';
+            logElem.className = 'alert alert-success';
+            logElem.innerHTML = 'Camera started successfully!';
+            logElem.style.display = 'block';
+          } catch (err) {
+            console.error('getUserMedia error:', err);
+            videoElem.style.display = 'none';
+            logElem.className = 'alert alert-danger';
+            logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            logElem.style.display = 'block';
+          }
+        }
+
+        function openCameraAccessPopup(evt) {
+          if (evt) evt.preventDefault();
+          const popup = window.open('/pay/camera_access.html', 'camera_access_popup', 'width=500,height=400');
+          if (popup) {
+            const timer = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(timer);
+                checkCameraPermission();
+              }
+            }, 500);
+          }
+        }
+
+        startBtn.addEventListener('click', startCamera);
+        popupLink.addEventListener('click', openCameraAccessPopup);
+        checkCameraPermission();
+      })();
+    </script>
+  </body>
+</html>
