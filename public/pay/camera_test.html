@@ -22,23 +22,23 @@
     <div class="container" id="content-container">
       <h2>Camera Access Test</h2>
 
-      <div id="camera-permission-status" class="alert alert-info" style="margin-top: 15px;">
+      <div id="camera-permission-status" class="alert alert-info" style="margin-top: 10px; padding: 10px;">
         Camera permission: <strong>checking...</strong>
       </div>
 
-      <div style="margin-top: 15px;">
-        <button id="start-camera-button" class="btn btn-primary">Start Camera</button>
-        <a href="#" id="request-camera-popup-link" class="btn btn-link" style="display: none;">Grant Camera Access in Popup Window</a>
+      <div style="margin-top: 10px;">
+        <button id="start-camera-button" class="btn btn-primary btn-sm">Start Camera</button>
+        <a href="#" id="request-camera-popup-link" class="btn btn-link btn-sm" style="display: none;">Grant Camera Access in Popup Window</a>
       </div>
 
-      <div id="camera-log" class="alert alert-warning" style="display: none; margin-top: 15px;"></div>
+      <div id="camera-log" class="alert alert-danger" style="display: none; margin-top: 10px; padding: 10px;"></div>
 
-      <div style="margin-top: 15px;">
-        <video id="camera-video" width="320" height="240" autoplay playsinline style="display: none; border: 1px solid #ccc; border-radius: 4px;"></video>
+      <div style="margin-top: 10px;">
+        <video id="camera-video" width="280" height="210" autoplay playsinline style="display: none; border: 1px solid #ccc; border-radius: 4px;"></video>
       </div>
 
-      <div style="margin-top: 25px;">
-        <a href="/pay/" class="btn btn-default">&larr; Back to Payment Handler</a>
+      <div style="margin-top: 15px;">
+        <a href="/pay/" class="btn btn-default btn-sm">&larr; Back to Payment Handler</a>
       </div>
     </div>
 
@@ -95,9 +95,6 @@
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             videoElem.srcObject = stream;
             videoElem.style.display = 'block';
-            logElem.className = 'alert alert-success';
-            logElem.innerHTML = 'Camera started successfully!';
-            logElem.style.display = 'block';
           } catch (err) {
             console.error('getUserMedia error:', err);
             videoElem.style.display = 'none';
