@@ -11,6 +11,7 @@ const MSG_UPDATE_FOR_MERCHANT = 'update_for_merchant';
 
 // Test app types passed via methodData[].data.appType
 const DELAY_OPEN_WINDOW = 'delay_open_window';
+const RESOLVE_WITHOUT_OPEN_WINDOW = 'resolve_without_open_window';
 const RESOLVE_BEFORE_OPEN_WINDOW = 'resolve_before_open_window';
 const REJECT_BEFORE_OPEN_WINDOW = 'reject_before_open_window';
 const RESOLVE_AFTER_OPEN_WINDOW = 'resolve_after_open_window';
@@ -81,6 +82,12 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
   e.respondWith(currentPayment.resolver.promise);
 
   const appType = e.methodData?.[0]?.data?.appType;
+
+  // Resolve promise without opening window if specified
+  if (appType === RESOLVE_WITHOUT_OPEN_WINDOW) {
+    currentPayment.resolver.resolve(createMockPaymentResponse());
+    return;
+  }
 
   let url = 'https://bobbucks.dev/pay';
   // The methodData here represents what the merchant supports. We could have a
