@@ -9,6 +9,13 @@ const MSG_PING = 'ping';
 const MSG_APP_WINDOW_READY = 'payment_app_window_ready';
 const MSG_UPDATE_FOR_MERCHANT = 'update_for_merchant';
 
+// Test app types passed via methodData[].data.appType
+const DELAY_OPEN_WINDOW = 'delay_open_window';
+const RESOLVE_BEFORE_OPEN_WINDOW = 'resolve_before_open_window';
+const REJECT_BEFORE_OPEN_WINDOW = 'reject_before_open_window';
+const RESOLVE_AFTER_OPEN_WINDOW = 'resolve_after_open_window';
+const REJECT_AFTER_OPEN_WINDOW = 'reject_after_open_window';
+
 /**
  * A utility class to resolve/reject a Promise from outside its constructor.
  * This is useful for bridging event-driven APIs with Promises. In this service
@@ -46,6 +53,16 @@ PromiseResolver.prototype = {
   },
 };
 
+function createMockPaymentResponse() {
+  return {
+    methodName: 'https://bobbucks.dev/pay',
+    details: {
+      bobbucks_token_id: 'MALICIOUS_APP_TEST_TOKEN',
+      message: 'Test payment completed',
+    },
+  };
+}
+
 // --- Global state for the current payment flow ---
 // We can only handle one payment request at a time.
 let currentPayment = {
@@ -63,12 +80,26 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
   currentPayment.resolver = new PromiseResolver();
   e.respondWith(currentPayment.resolver.promise);
 
+  const appType = e.methodData?.[0]?.data?.appType;
+
   let url = 'https://bobbucks.dev/pay';
   // The methodData here represents what the merchant supports. We could have a
   // payment selection screen, but for this simple demo if we see alipay in the list
   // we send the user through the alipay flow.
   if (e.methodData[0].supportedMethods[0].indexOf('alipay') !== -1) {
     url += '/alipay.html';
+  }
+
+  // Resolve or reject promise before openWindow if specified
+  if (appType === RESOLVE_BEFORE_OPEN_WINDOW) {
+    currentPayment.resolver.resolve(createMockPaymentResponse());
+  } else if (appType === REJECT_BEFORE_OPEN_WINDOW) {
+    currentPayment.resolver.reject('Payment rejected before openWindow');
+  }
+
+  // Long loading time payment app if specified: delay 5 seconds before openWindow.
+  if (appType === DELAY_OPEN_WINDOW) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
   }
 
   try {
@@ -78,6 +109,13 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
     }
   } catch (err) {
     currentPayment.resolver.reject(err);
+  }
+
+  // Resolve or reject promise immediately after openWindow if specified
+  if (appType === RESOLVE_AFTER_OPEN_WINDOW) {
+    currentPayment.resolver.resolve(createMockPaymentResponse());
+  } else if (appType === REJECT_AFTER_OPEN_WINDOW) {
+    currentPayment.resolver.reject('Payment rejected immediately after openWindow');
   }
 });
 
