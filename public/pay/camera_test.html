@@ -52,6 +52,8 @@
         const logElem = document.getElementById('camera-log');
         const videoElem = document.getElementById('camera-video');
 
+        let cameraAccessSupported = true;
+
         function updateCameraPermissionUI(state) {
           if (!statusElem) return;
           statusElem.style.display = 'block';
@@ -63,13 +65,13 @@
           } else if (state === 'prompt') {
             statusElem.className = 'alert alert-warning';
             statusElem.innerHTML = 'Camera permission: <strong>not granted (prompt required)</strong>';
-            if (inDialogLink) inDialogLink.style.display = 'inline-block';
-            if (popupLink) popupLink.style.display = 'inline-block';
+            if (inDialogLink) inDialogLink.style.display = cameraAccessSupported ? 'inline-block' : 'none';
+            if (popupLink) popupLink.style.display = cameraAccessSupported ? 'inline-block' : 'none';
           } else if (state === 'denied') {
             statusElem.className = 'alert alert-danger';
             statusElem.innerHTML = 'Camera permission: <strong>denied</strong>';
-            if (inDialogLink) inDialogLink.style.display = 'inline-block';
-            if (popupLink) popupLink.style.display = 'inline-block';
+            if (inDialogLink) inDialogLink.style.display = cameraAccessSupported ? 'inline-block' : 'none';
+            if (popupLink) popupLink.style.display = cameraAccessSupported ? 'inline-block' : 'none';
           } else {
             statusElem.className = 'alert alert-info';
             statusElem.innerHTML = `Camera permission: <strong>${state}</strong>`;
@@ -103,8 +105,16 @@
           } catch (err) {
             console.error('getUserMedia error:', err);
             videoElem.style.display = 'none';
-            logElem.className = 'alert alert-danger';
-            logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            if (err.name === 'NotSupportedError') {
+              cameraAccessSupported = false;
+              if (inDialogLink) inDialogLink.style.display = 'none';
+              if (popupLink) popupLink.style.display = 'none';
+              logElem.className = 'alert alert-warning';
+              logElem.innerHTML = '<b>Camera access is not supported:</b> feature flag <code>kPaymentHandlerCameraAccess</code> may be disabled.';
+            } else {
+              logElem.className = 'alert alert-danger';
+              logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            }
             logElem.style.display = 'block';
           }
         }
@@ -118,8 +128,16 @@
             await checkCameraPermission();
           } catch (err) {
             console.error('getUserMedia error:', err);
-            logElem.className = 'alert alert-danger';
-            logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            if (err.name === 'NotSupportedError') {
+              cameraAccessSupported = false;
+              if (inDialogLink) inDialogLink.style.display = 'none';
+              if (popupLink) popupLink.style.display = 'none';
+              logElem.className = 'alert alert-warning';
+              logElem.innerHTML = '<b>Camera access is not supported:</b> feature flag <code>kPaymentHandlerCameraAccess</code> may be disabled.';
+            } else {
+              logElem.className = 'alert alert-danger';
+              logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            }
             logElem.style.display = 'block';
             await checkCameraPermission();
           }
