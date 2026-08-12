@@ -60,10 +60,12 @@
           } else if (state === 'prompt') {
             statusElem.className = 'alert alert-warning';
             statusElem.innerHTML = 'Camera permission: <strong>not granted (prompt required)</strong>';
+            if (inDialogLink) inDialogLink.style.display = 'inline-block';
             if (popupLink) popupLink.style.display = 'inline-block';
           } else if (state === 'denied') {
             statusElem.className = 'alert alert-danger';
             statusElem.innerHTML = 'Camera permission: <strong>denied</strong>';
+            if (inDialogLink) inDialogLink.style.display = 'inline-block';
             if (popupLink) popupLink.style.display = 'inline-block';
           } else {
             statusElem.className = 'alert alert-info';
@@ -101,6 +103,22 @@
             logElem.className = 'alert alert-danger';
             logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
             logElem.style.display = 'block';
+          }
+        }
+
+        async function requestCameraInDialog(evt) {
+          if (evt) evt.preventDefault();
+          logElem.style.display = 'none';
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop());
+            await checkCameraPermission();
+          } catch (err) {
+            console.error('getUserMedia error:', err);
+            logElem.className = 'alert alert-danger';
+            logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            logElem.style.display = 'block';
+            await checkCameraPermission();
           }
         }
 
