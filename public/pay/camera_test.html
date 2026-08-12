@@ -52,6 +52,8 @@
         const logElem = document.getElementById('camera-log');
         const videoElem = document.getElementById('camera-video');
 
+        let cameraAccessSupported = true;
+
         function updateCameraPermissionUI(state) {
           if (!statusElem) return;
           statusElem.style.display = 'block';
@@ -103,9 +105,41 @@
           } catch (err) {
             console.error('getUserMedia error:', err);
             videoElem.style.display = 'none';
-            logElem.className = 'alert alert-danger';
-            logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            if (err.name === 'NotSupportedError') {
+              cameraAccessSupported = false;
+              if (inDialogLink) inDialogLink.style.display = 'none';
+              if (popupLink) popupLink.style.display = 'none';
+              logElem.className = 'alert alert-warning';
+              logElem.innerHTML = '<b>Camera access is not supported:</b> feature flag <code>kPaymentHandlerCameraAccess</code> may be disabled.';
+            } else {
+              logElem.className = 'alert alert-danger';
+              logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            }
             logElem.style.display = 'block';
+          }
+        }
+
+        async function requestCameraInDialog(evt) {
+          if (evt) evt.preventDefault();
+          logElem.style.display = 'none';
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach(track => track.stop());
+            await checkCameraPermission();
+          } catch (err) {
+            console.error('getUserMedia error:', err);
+            if (err.name === 'NotSupportedError') {
+              cameraAccessSupported = false;
+              if (inDialogLink) inDialogLink.style.display = 'none';
+              if (popupLink) popupLink.style.display = 'none';
+              logElem.className = 'alert alert-warning';
+              logElem.innerHTML = '<b>Camera access is not supported:</b> feature flag <code>kPaymentHandlerCameraAccess</code> may be disabled.';
+            } else {
+              logElem.className = 'alert alert-danger';
+              logElem.innerHTML = `<b>Camera error (${err.name})</b>: ${err.message || 'Access failed.'}`;
+            }
+            logElem.style.display = 'block';
+            await checkCameraPermission();
           }
         }
 
