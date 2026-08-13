@@ -69,13 +69,26 @@ function createMockPaymentResponse() {
 let currentPayment = {
   paymentRequestEvent: null,
   resolver: null,
+  delayTimeoutId: null,
 };
+
+function resetCurrentPayment() {
+  if (currentPayment.delayTimeoutId) {
+    clearTimeout(currentPayment.delayTimeoutId);
+    currentPayment.delayTimeoutId = null;
+  }
+  currentPayment.paymentRequestEvent = null;
+  currentPayment.resolver = null;
+}
 
 self.addEventListener(CAN_MAKE_PAYMENT_EVENT, (e) => {
   e.respondWith(true);
 });
 
 self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
+  // Reset any prior in-flight payment request or timer
+  resetCurrentPayment();
+
   // Stash the event and a resolver for later.
   currentPayment.paymentRequestEvent = e;
   currentPayment.resolver = new PromiseResolver();
@@ -106,7 +119,12 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
 
   // Long loading time payment app if specified: delay 5 seconds before openWindow.
   if (appType === DELAY_OPEN_WINDOW) {
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await new Promise((resolve) => {
+      currentPayment.delayTimeoutId = setTimeout(() => {
+        currentPayment.delayTimeoutId = null;
+        resolve();
+      }, 5000);
+    });
   }
 
   try {
