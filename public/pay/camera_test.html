@@ -28,6 +28,7 @@
 
       <div style="margin-top: 10px;">
         <button id="start-camera-button" class="btn btn-primary btn-sm">Start Camera</button>
+        <a href="#" id="request-camera-in-dialog-link" class="btn btn-link btn-sm" style="display: none;">Grant Camera Access inside this Dialog</a>
         <a href="#" id="request-camera-popup-link" class="btn btn-link btn-sm" style="display: none;">Grant Camera Access in Popup Window</a>
       </div>
 
@@ -45,6 +46,7 @@
     <script>
       (function() {
         const statusElem = document.getElementById('camera-permission-status');
+        const inDialogLink = document.getElementById('request-camera-in-dialog-link');
         const popupLink = document.getElementById('request-camera-popup-link');
         const startBtn = document.getElementById('start-camera-button');
         const logElem = document.getElementById('camera-log');
@@ -136,6 +138,7 @@
         }
 
         startBtn.addEventListener('click', startCamera);
+        if (inDialogLink) inDialogLink.addEventListener('click', requestCameraInDialog);
         popupLink.addEventListener('click', openCameraAccessPopup);
         checkCameraPermission();
       })();
