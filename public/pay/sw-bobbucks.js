@@ -127,8 +127,17 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
     });
   }
 
+  // Preferred web content size of the payment handler window, passed via
+  // methodData[].data.preferredSize as {width, height}. This is used to test
+  // openWindow(url, {preferredSize}) behind the PaymentHandlerStaticCustomSize
+  // feature. The values are passed through as-is, so that merchants can also
+  // test invalid sizes.
+  const preferredSize = e.methodData?.[0]?.data?.preferredSize;
+
   try {
-    const windowClient = await e.openWindow(url);
+    const windowClient = preferredSize ?
+        await e.openWindow(url, {preferredSize}) :
+        await e.openWindow(url);
     if (windowClient === null) {
       currentPayment.resolver.reject('Failed to open window');
     }

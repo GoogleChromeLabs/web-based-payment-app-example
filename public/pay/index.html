@@ -30,6 +30,23 @@
         <a href="#" id="trigger-internal-error-button" class="btn btn-link">Trigger internal app error</a>
         <a href="/pay/camera_test.html" class="btn btn-link">Test Camera Access &rarr;</a>
       </div>
+      <!-- Window resize test, only shown when the merchant passes
+           methodData[].data.resizeTest = true. -->
+      <div id="resize-test" style="display: none;">
+        <p>Current web contents size: <span id="current-size"></span></p>
+        <p>
+          <button id="resize-larger-button" type="button" class="btn btn-default">Resize to larger (640 x 650)</button>
+          <button id="resize-wider-button" type="button" class="btn btn-default">Resize to wider (800 x 650)</button>
+          <button id="resize-shorter-button" type="button" class="btn btn-default">Resize to shorter (640 x 500)</button>
+        </p>
+        <p style="white-space: nowrap;">
+          Resize to custom size
+          <input id="resize-width" type="number" min="1" class="form-control" style="display: inline-block; width: 6em;" aria-label="Width">
+          x
+          <input id="resize-height" type="number" min="1" class="form-control" style="display: inline-block; width: 6em;" aria-label="Height">
+          <button id="resize-custom-button" type="button" class="btn btn-default">Resize</button>
+        </p>
+      </div>
       <div id="detailsContainer" class="collapse">
         <pre style="white-space: pre-wrap;" id="details"></pre>
       </div>

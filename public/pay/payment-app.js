@@ -56,11 +56,44 @@
       methodData = e.data.methodData;
       document.getElementById('details').innerHTML = JSON.stringify(e.data, undefined, 2);
       populatePaymentInstrumentsList();
+      if (isResizeTestRequested()) {
+        showResizeTest();
+      }
     } else if (e.data.updateWith) {
       const log = document.getElementById('update-with-event-log');
       log.innerHTML = `<b>Received update from merchant</b>: ${e.data.updateWith}`;
       log.style.display = 'block';
     }
+  }
+
+  function isResizeTestRequested() {
+    return methodData.some(method => method.data && method.data.resizeTest);
+  }
+
+  function updateCurrentSize() {
+    document.getElementById('current-size').textContent =
+        `${window.innerWidth} x ${window.innerHeight}`;
+  }
+
+  function showResizeTest() {
+    document.getElementById('resize-test').style.display = 'block';
+    document.getElementById('resize-width').value = window.innerWidth;
+    document.getElementById('resize-height').value = window.innerHeight;
+    updateCurrentSize();
+  }
+
+  // Resizes the payment handler window. The arguments are interpreted as the
+  // size of the payment handler web contents. This is tested behind the
+  // PaymentHandlerDynamicCustomSize feature.
+  function resizeWindow(width, height) {
+    window.resizeTo(width, height);
+  }
+
+  function resizeToCustomSize() {
+    const width = parseInt(document.getElementById('resize-width').value, 10);
+    const height = parseInt(document.getElementById('resize-height').value, 10);
+    if (isNaN(width) || isNaN(height)) return;
+    resizeWindow(width, height);
   }
 
   function pingServiceWorkerToKeepItAlive() {
@@ -127,6 +160,20 @@
 
     const errBtn = document.getElementById('trigger-internal-error-button');
     if (errBtn) errBtn.addEventListener('click', triggerInternalError);
+
+    const resizeLargerBtn = document.getElementById('resize-larger-button');
+    if (resizeLargerBtn) resizeLargerBtn.addEventListener('click', () => resizeWindow(640, 650));
+
+    const resizeWiderBtn = document.getElementById('resize-wider-button');
+    if (resizeWiderBtn) resizeWiderBtn.addEventListener('click', () => resizeWindow(800, 650));
+
+    const resizeShorterBtn = document.getElementById('resize-shorter-button');
+    if (resizeShorterBtn) resizeShorterBtn.addEventListener('click', () => resizeWindow(640, 500));
+
+    const resizeCustomBtn = document.getElementById('resize-custom-button');
+    if (resizeCustomBtn) resizeCustomBtn.addEventListener('click', resizeToCustomSize);
+
+    window.addEventListener('resize', updateCurrentSize);
   }
 
   init();
