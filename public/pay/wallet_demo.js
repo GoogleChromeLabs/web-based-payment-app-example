@@ -7,7 +7,7 @@
   const SW_MSG_PING = 'ping';
 
   // Target dimensions when expanding the window for the embedded 3D-Secure challenge.
-  const DEFAULT_3DS_SIZE = { width: 720, height: 640 };
+  const DEFAULT_3DS_SIZE = { width: 720, height: 500 };
   // Minimum dimensions for the camera authentication view so it never scrolls.
   const MIN_CAMERA_VIEW_SIZE = { width: 460, height: 560 };
 
