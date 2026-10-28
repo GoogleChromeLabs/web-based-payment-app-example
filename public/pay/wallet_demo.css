@@ -68,7 +68,7 @@ html, body {
   background-color: var(--bg-page);
   color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -82,31 +82,35 @@ body {
 .wallet-header {
   background-color: var(--brand-header-bg);
   color: var(--brand-header-text);
-  padding: 12px 16px;
+  padding: 8px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body[data-brand="bigbucks"] .wallet-header {
+  padding: 13px 18px;
 }
 
 .brand-identity {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .brand-logo {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 7px;
   background: var(--brand-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
   letter-spacing: -0.03em;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -114,6 +118,9 @@ body {
 }
 
 body[data-brand="bigbucks"] .brand-logo {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   border: 1px solid rgba(252, 211, 77, 0.4);
 }
@@ -126,43 +133,59 @@ body[data-brand="bigbucks"] .brand-logo {
 .brand-name-row {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
 }
 
 .brand-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .brand-tier-pill {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
   background: var(--brand-badge-bg);
   color: var(--brand-badge-text);
 }
 
 .brand-subtitle {
-  font-size: 11px;
+  font-size: 10.5px;
   color: rgba(255, 255, 255, 0.65);
+  display: none;
+}
+
+body[data-brand="bigbucks"] .brand-subtitle {
+  display: block;
+  font-size: 11px;
 }
 
 .merchant-amount-summary {
   text-align: right;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+body[data-brand="bigbucks"] .merchant-amount-summary {
+  display: block;
 }
 
 .merchant-label {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.68);
+}
+
+body[data-brand="bigbucks"] .merchant-label {
   display: block;
 }
 
 .total-amount-display {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: #ffffff;
@@ -172,10 +195,10 @@ body[data-brand="bigbucks"] .brand-logo {
 .wallet-main {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 body[data-brand="bigbucks"] .wallet-main {
@@ -186,12 +209,24 @@ body[data-brand="bigbucks"] .wallet-main {
 .view-panel {
   display: none;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
+}
+
+body[data-brand="bigbucks"] .view-panel {
+  gap: 12px;
 }
 
 .view-panel.active {
   display: flex;
+}
+
+/* --- Ultra-Compact Adjustments for BobBucks Express (fits ~210px height) --- */
+body[data-brand="bobbucks"] #select-section-header,
+body[data-brand="bobbucks"] .instrument-flow-note,
+body[data-brand="bobbucks"] #action-caption-text,
+body[data-brand="bobbucks"] .instrument-radio {
+  display: none;
 }
 
 /* --- BigBucks Pro Elements (Hidden in Compact BobBucks) --- */
@@ -218,11 +253,6 @@ body[data-brand="bigbucks"] .bigbucks-perks-bar {
 
 body[data-brand="bigbucks"] .premium-only-instrument {
   display: flex !important;
-}
-
-/* Hide radio button in compact single-option mode */
-body[data-brand="bobbucks"] .instrument-radio {
-  display: none;
 }
 
 .perks-left {
@@ -271,9 +301,9 @@ body[data-brand="bobbucks"] .instrument-radio {
 .instrument-card {
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px 14px;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
   background: var(--bg-surface);
   border: 1.5px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -281,6 +311,11 @@ body[data-brand="bobbucks"] .instrument-radio {
   transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
   box-shadow: var(--shadow-sm);
   user-select: none;
+}
+
+body[data-brand="bigbucks"] .instrument-card {
+  align-items: flex-start;
+  padding: 12px 14px;
 }
 
 .instrument-card:hover {
@@ -303,16 +338,15 @@ body[data-brand="bobbucks"] .instrument-radio {
 }
 
 .instrument-icon {
-  width: 40px;
-  height: 28px;
+  width: 38px;
+  height: 26px;
   border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 10.5px;
+  font-size: 10px;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .instrument-icon.apex-card {
@@ -341,14 +375,14 @@ body[data-brand="bobbucks"] .instrument-radio {
 
 .instrument-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-primary);
 }
 
 .instrument-badge {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  padding: 2px 7px;
+  padding: 1.5px 6px;
   border-radius: 4px;
   display: inline-flex;
   align-items: center;
@@ -369,9 +403,9 @@ body[data-brand="bobbucks"] .instrument-radio {
 }
 
 .instrument-meta {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-secondary);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .instrument-flow-note {
@@ -390,7 +424,6 @@ body[data-brand="bobbucks"] .instrument-radio {
 /* --- Primary CTA Area --- */
 .action-area {
   margin-top: auto;
-  padding-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -398,8 +431,8 @@ body[data-brand="bobbucks"] .instrument-radio {
 
 .btn-primary-action {
   width: 100%;
-  padding: 11px 16px;
-  font-size: 14px;
+  padding: 9px 14px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #ffffff;
   background-color: var(--brand-primary);
@@ -414,6 +447,11 @@ body[data-brand="bobbucks"] .instrument-radio {
   box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
 }
 
+body[data-brand="bigbucks"] .btn-primary-action {
+  padding: 11px 16px;
+  font-size: 14px;
+}
+
 .btn-primary-action:hover:not(:disabled) {
   background-color: var(--brand-primary-hover);
 }
@@ -423,7 +461,7 @@ body[data-brand="bobbucks"] .instrument-radio {
 }
 
 .btn-primary-action:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
 }
 
@@ -534,6 +572,20 @@ body[data-brand="bobbucks"] .instrument-radio {
 
 @keyframes spinRing {
   to { transform: rotate(360deg); }
+}
+
+.verified-check-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  border: 2px solid #22c55e;
+  color: #15803d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
 }
 
 .threeds-loading-title {
@@ -696,70 +748,6 @@ body[data-brand="bobbucks"] .instrument-radio {
   background: #1d4ed8;
 }
 
-/* --- View 2b: 3DS Verified & Resized Back --- */
-.verified-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--success-border);
-  border-radius: var(--radius-lg);
-  padding: 18px 16px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex: 1;
-  box-shadow: var(--shadow-sm);
-}
-
-.verified-check-circle {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--success-bg);
-  border: 2px solid #22c55e;
-  color: #15803d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.verified-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.verified-subtitle {
-  font-size: 12px;
-  color: var(--text-secondary);
-  max-width: 280px;
-}
-
-.verified-progress-track {
-  width: 100%;
-  max-width: 200px;
-  height: 5px;
-  background: var(--bg-subtle);
-  border-radius: 999px;
-  overflow: hidden;
-  margin-top: 4px;
-}
-
-.verified-progress-bar {
-  height: 100%;
-  width: 0%;
-  background: var(--brand-primary);
-  border-radius: 999px;
-  transition: width 2.1s linear;
-}
-
-.verified-progress-bar.running {
-  width: 100%;
-}
-
 /* --- View 3: Camera Biometric Authentication --- */
 .camera-auth-card {
   background: var(--bg-surface);
@@ -811,7 +799,7 @@ body[data-brand="bobbucks"] .instrument-radio {
   position: relative;
   width: 100%;
   max-width: 340px;
-  height: 200px;
+  height: 205px;
   margin: 0 auto;
   background: #0f172a;
   border-radius: var(--radius-md);
@@ -819,7 +807,12 @@ body[data-brand="bobbucks"] .instrument-radio {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #334155;
+  border: 2px solid #334155;
+  transition: border-color 0.25s ease;
+}
+
+.camera-viewport-wrapper.verified {
+  border-color: #22c55e;
 }
 
 .camera-video {
@@ -865,7 +858,7 @@ body[data-brand="bobbucks"] .instrument-radio {
 .scan-reticle {
   position: absolute;
   inset: 18px 50px;
-  border: 2px dashed rgba(52, 211, 153, 0.55);
+  border: 2px dashed rgba(52, 211, 153, 0.65);
   border-radius: 16px;
   pointer-events: none;
   display: none;
@@ -873,6 +866,10 @@ body[data-brand="bobbucks"] .instrument-radio {
 
 .camera-viewport-wrapper.streaming .scan-reticle {
   display: block;
+}
+
+.camera-viewport-wrapper.verified .scan-reticle {
+  display: none;
 }
 
 .scan-line {
@@ -890,13 +887,78 @@ body[data-brand="bobbucks"] .instrument-radio {
   50% { top: 86%; }
 }
 
+/* Camera Verified / Success Overlay */
+.camera-verified-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 78, 59, 0.82);
+  backdrop-filter: blur(4px);
+  color: #ffffff;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+  text-align: center;
+}
+
+.camera-viewport-wrapper.verified .camera-verified-overlay {
+  display: flex;
+}
+
+.camera-verified-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.camera-verified-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.camera-verified-sub {
+  font-size: 12px;
+  color: #d1fae5;
+}
+
+.camera-verified-progress {
+  width: 160px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.camera-verified-bar {
+  height: 100%;
+  width: 0%;
+  background: #4ade80;
+  transition: width 1.6s linear;
+}
+
+.camera-verified-bar.running {
+  width: 100%;
+}
+
 .camera-error-box {
   display: none;
   background: var(--danger-bg);
   color: var(--danger-text);
   border: 1px solid var(--danger-border);
   padding: 8px 10px;
-  border-radius: var(--radius-sm);
+  border-radius: 4px;
   font-size: 12px;
 }
 
@@ -909,7 +971,7 @@ body[data-brand="bobbucks"] .instrument-radio {
 
 /* --- Wallet Footer --- */
 .wallet-footer {
-  padding: 8px 16px;
+  padding: 6px 14px;
   background: var(--bg-surface);
   border-top: 1px solid var(--border-color);
   display: flex;
@@ -925,7 +987,7 @@ body[data-brand="bobbucks"] .instrument-radio {
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  padding: 3px 6px;
+  padding: 2px 6px;
   border-radius: 4px;
 }
 

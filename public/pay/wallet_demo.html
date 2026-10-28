@@ -43,8 +43,8 @@
       </div>
 
       <div class="section-header" id="select-section-header">
-        <h1 class="section-title" id="select-section-title">Payment Method</h1>
-        <span class="section-hint" id="select-section-hint">Express Card</span>
+        <h1 class="section-title" id="select-section-title">Select Payment Method</h1>
+        <span class="section-hint" id="select-section-hint">Choose verification flow</span>
       </div>
 
       <div class="instrument-list">
@@ -110,7 +110,8 @@
 
         <!-- Simulated 3DS Loading / Verifying Overlay State -->
         <div class="threeds-loading-state" id="threeds-loading-state">
-          <div class="spinner-ring" aria-hidden="true"></div>
+          <div class="spinner-ring" id="threeds-spinner" aria-hidden="true"></div>
+          <div class="verified-check-circle" id="threeds-verified-icon" style="display: none;">&#10003;</div>
           <h2 class="threeds-loading-title" id="threeds-loading-title">Connecting to Acme Issuing Bank&hellip;</h2>
           <p class="threeds-loading-subtitle" id="threeds-loading-subtitle">
             Preparing secure 3D-Secure 2.2 challenge in expanded window
@@ -139,7 +140,7 @@
             </div>
             <div class="threeds-resize-callout">
               <strong>Dynamic Resize Active:</strong> The payment handler called
-              <code>window.resizeTo()</code> to fit this 3D-Secure challenge and will restore the original size once verified.
+              <code>window.resizeTo()</code> to expand the window for this 3D-Secure challenge.
             </div>
           </div>
 
@@ -170,20 +171,6 @@
       </div>
     </section>
 
-    <!-- VIEW 2b: 3DS Verified & Window Restored -->
-    <section class="view-panel" id="view-3ds-verified" aria-label="3D-Secure verified">
-      <div class="verified-card">
-        <div class="verified-check-circle">&#10003;</div>
-        <h2 class="verified-title">3D-Secure Verified</h2>
-        <p class="verified-subtitle">
-          Window restored to original size via <code>window.resizeTo()</code>. Returning payment confirmation to merchant&hellip;
-        </p>
-        <div class="verified-progress-track">
-          <div class="verified-progress-bar" id="verified-progress-bar"></div>
-        </div>
-      </div>
-    </section>
-
     <!-- VIEW 3: Camera-Based Biometric Verification -->
     <section class="view-panel" id="view-camera" aria-label="Camera biometric authentication">
       <div class="camera-auth-card">
@@ -196,6 +183,15 @@
           <video id="camera-video" class="camera-video" autoplay playsinline muted></video>
           <div class="scan-reticle">
             <div class="scan-line"></div>
+          </div>
+          <!-- Fake Verified / Success Overlay shown after camera scans for a few seconds -->
+          <div class="camera-verified-overlay" id="camera-verified-overlay">
+            <div class="camera-verified-badge">&#10003;</div>
+            <div class="camera-verified-title">Face ID Verified</div>
+            <div class="camera-verified-sub">Payment authorized &bull; Returning to merchant&hellip;</div>
+            <div class="camera-verified-progress">
+              <div class="camera-verified-bar" id="camera-verified-bar"></div>
+            </div>
           </div>
           <div class="camera-placeholder" id="camera-placeholder">
             <span class="camera-placeholder-icon">&#128247;</span>
@@ -210,7 +206,7 @@
 
         <div class="camera-actions-footer">
           <button type="button" class="btn-primary-action" id="btn-confirm-camera-pay" disabled>
-            <span id="btn-confirm-camera-text">Verify Identity &amp; Complete Payment</span>
+            <span id="btn-confirm-camera-text">Waiting for Camera Scan&hellip;</span>
           </button>
           <button type="button" class="btn-secondary-action" id="btn-camera-back">
             &larr; Back to Payment Methods

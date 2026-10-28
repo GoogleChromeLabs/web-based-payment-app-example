@@ -11,11 +11,14 @@
   // Minimum dimensions for the camera authentication view so it never scrolls.
   const MIN_CAMERA_VIEW_SIZE = { width: 460, height: 560 };
 
-  // Simulated network latency for 3D-Secure challenge loading and OTP verification.
-  const THREEDS_LOAD_LATENCY_MS = 1200;
-  const THREEDS_VERIFY_LATENCY_MS = 1100;
-  // Pause duration (ms) after resizing back from 3DS before closing the window.
-  const POST_3DS_COMPLETE_DELAY_MS = 2200;
+  // Simulated network latency for 3D-Secure challenge loading (+0.5s) and OTP verification (+0.5s).
+  const THREEDS_LOAD_LATENCY_MS = 1700;
+  const THREEDS_VERIFY_LATENCY_MS = 1600;
+  const THREEDS_SUCCESS_HOLD_MS = 650;
+
+  // Camera scan duration before triggering fake "Face ID Verified" state, and hold duration before completing.
+  const CAMERA_SCAN_DURATION_MS = 2600;
+  const CAMERA_VERIFIED_HOLD_MS = 1700;
 
   let paymentRequestClient = null;
   let methodData = [];
@@ -24,10 +27,12 @@
   let merchantName = 'Canopy & Co.';
   let selectedInstrument = '3ds_card';
 
-  // Stores the window size prior to dynamic resize so we can restore it.
+  // Stores the window size prior to dynamic resize so we can restore it on Cancel/Back.
   let savedWindowSize = null;
-  // Active MediaStream for camera authentication.
+  // Active MediaStream and timers for camera authentication.
   let activeCameraStream = null;
+  let cameraScanTimer = null;
+  let cameraCompleteTimer = null;
 
   // --- DOM Elements ---
   const brandLogoEl = document.getElementById('brand-logo');
@@ -42,7 +47,6 @@
 
   const viewSelectEl = document.getElementById('view-select');
   const view3dsEl = document.getElementById('view-3ds');
-  const view3dsVerifiedEl = document.getElementById('view-3ds-verified');
   const viewCameraEl = document.getElementById('view-camera');
 
   const card3dsEl = document.getElementById('instrument-card-3ds');
@@ -54,6 +58,8 @@
   const actionCaptionTextEl = document.getElementById('action-caption-text');
 
   const threedsLoadingStateEl = document.getElementById('threeds-loading-state');
+  const threedsSpinnerEl = document.getElementById('threeds-spinner');
+  const threedsVerifiedIconEl = document.getElementById('threeds-verified-icon');
   const threedsLoadingTitleEl = document.getElementById('threeds-loading-title');
   const threedsLoadingSubtitleEl = document.getElementById('threeds-loading-subtitle');
   const threedsChallengeContentEl = document.getElementById('threeds-challenge-content');
@@ -64,11 +70,11 @@
   const btnOtpAutofillEl = document.getElementById('btn-otp-autofill');
   const btn3dsApproveEl = document.getElementById('btn-3ds-approve');
   const btn3dsBackEl = document.getElementById('btn-3ds-back');
-  const verifiedProgressBarEl = document.getElementById('verified-progress-bar');
 
   const cameraStatusPillEl = document.getElementById('camera-status-pill');
   const cameraViewportWrapperEl = document.getElementById('camera-viewport-wrapper');
   const cameraVideoEl = document.getElementById('camera-video');
+  const cameraVerifiedBarEl = document.getElementById('camera-verified-bar');
   const cameraPlaceholderEl = document.getElementById('camera-placeholder');
   const cameraPlaceholderTextEl = document.getElementById('camera-placeholder-text');
   const btnRequestCameraDialogEl = document.getElementById('btn-request-camera-dialog');
@@ -83,7 +89,7 @@
   // --- Helpers ---
 
   function showView(targetView) {
-    [viewSelectEl, view3dsEl, view3dsVerifiedEl, viewCameraEl].forEach((view) => {
+    [viewSelectEl, view3dsEl, viewCameraEl].forEach((view) => {
       if (view === targetView) {
         view.classList.add('active');
       } else {
@@ -142,8 +148,6 @@
       brandNameEl.textContent = 'BobBucks';
       brandTierPillEl.textContent = 'Express';
       brandSubtitleEl.textContent = 'Compact One-Click Checkout';
-      selectSectionTitleEl.textContent = 'Payment Method';
-      selectSectionHintEl.textContent = 'Express Card';
       // Compact BobBucks only offers the 3DS card option
       radio3dsEl.checked = true;
       radioCameraEl.checked = false;
@@ -174,7 +178,7 @@
     if (selectedInstrument === '3ds_card') {
       card3dsEl.classList.add('selected');
       cardCameraEl.classList.remove('selected');
-      btnContinueTextEl.textContent = 'Continue with Apex \u2022\u2022\u2022\u2022 4242';
+      btnContinueTextEl.textContent = 'Pay with Apex \u2022\u2022\u2022\u2022 4242';
       actionCaptionTextEl.textContent =
           'Next: Expands window via window.resizeTo() for 3D-Secure verification';
     } else {
@@ -212,7 +216,7 @@
   // --- Flow 1: Fake 3D-Secure (3DS) with Dynamic Window Resize & Simulated Latency ---
 
   function start3dsFlow() {
-    // Save current window dimensions before expanding for 3DS.
+    // Save current window dimensions before expanding for 3DS (in case user cancels).
     savedWindowSize = {
       width: window.innerWidth,
       height: window.innerHeight,
@@ -223,6 +227,8 @@
     const targetHeight = (customData.threeDsSize && customData.threeDsSize.height) || DEFAULT_3DS_SIZE.height;
 
     // Show loading spinner first while resizing the window
+    threedsSpinnerEl.style.display = 'block';
+    threedsVerifiedIconEl.style.display = 'none';
     threedsLoadingTitleEl.textContent = 'Connecting to Acme Issuing Bank\u2026';
     threedsLoadingSubtitleEl.textContent = 'Loading 3D-Secure 2.2 verification challenge';
     threedsLoadingStateEl.style.display = 'flex';
@@ -250,27 +256,19 @@
       otpInputEl.value = '849201';
     }
 
-    // Show simulated bank verification spinner before resizing back
+    // Show simulated bank verification spinner
+    threedsSpinnerEl.style.display = 'block';
+    threedsVerifiedIconEl.style.display = 'none';
     threedsLoadingTitleEl.textContent = 'Verifying security code\u2026';
     threedsLoadingSubtitleEl.textContent = 'Confirming one-time passcode with Acme Issuing Bank';
     threedsChallengeContentEl.style.display = 'none';
     threedsLoadingStateEl.style.display = 'flex';
 
     setTimeout(() => {
-      // Restore window back to its initial dimensions before completing payment.
-      const restoreWidth = savedWindowSize ? savedWindowSize.width : 400;
-      const restoreHeight = savedWindowSize ? savedWindowSize.height : 350;
-      window.resizeTo(restoreWidth, restoreHeight);
-
-      verifiedProgressBarEl.classList.remove('running');
-      showView(view3dsVerifiedEl);
-
-      // Trigger progress bar animation on next frame.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          verifiedProgressBarEl.classList.add('running');
-        });
-      });
+      threedsSpinnerEl.style.display = 'none';
+      threedsVerifiedIconEl.style.display = 'flex';
+      threedsLoadingTitleEl.textContent = '3D-Secure Verified';
+      threedsLoadingSubtitleEl.textContent = 'Payment authorized \u2022 Returning to merchant\u2026';
 
       setTimeout(() => {
         completePaymentWithDetails({
@@ -280,15 +278,26 @@
           threeDSecureStatus: 'authenticated',
           bobbucks_token_id: 'tok_3ds_apex_4242_verified',
         });
-      }, POST_3DS_COMPLETE_DELAY_MS);
+      }, THREEDS_SUCCESS_HOLD_MS);
     }, THREEDS_VERIFY_LATENCY_MS);
   }
 
   // --- Flow 2: Camera-Based Biometric Verification ---
 
+  function clearCameraTimers() {
+    if (cameraScanTimer) {
+      clearTimeout(cameraScanTimer);
+      cameraScanTimer = null;
+    }
+    if (cameraCompleteTimer) {
+      clearTimeout(cameraCompleteTimer);
+      cameraCompleteTimer = null;
+    }
+  }
+
   function updateCameraStatusUI(state, customText) {
     cameraStatusPillEl.className = 'camera-status-pill';
-    if (state === 'granted' || state === 'streaming') {
+    if (state === 'granted' || state === 'streaming' || state === 'verified') {
       cameraStatusPillEl.classList.add('status-granted');
       cameraStatusPillEl.textContent = customText || 'Camera Active';
       btnRequestCameraDialogEl.style.display = 'none';
@@ -312,8 +321,38 @@
     }
   }
 
+  function triggerCameraVerifiedSuccess() {
+    clearCameraTimers();
+    cameraViewportWrapperEl.classList.add('verified');
+    cameraVerifiedBarEl.classList.remove('running');
+    updateCameraStatusUI('verified', '\u2713 Face ID Verified');
+
+    btnConfirmCameraPayEl.disabled = false;
+    btnConfirmCameraTextEl.textContent = '\u2713 Identity Verified \u2014 Completing Payment\u2026';
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        cameraVerifiedBarEl.classList.add('running');
+      });
+    });
+
+    cameraCompleteTimer = setTimeout(() => {
+      completePaymentWithDetails({
+        flow: 'camera_biometric',
+        flowLabel: 'Camera Biometric Authentication (navigator.mediaDevices)',
+        instrumentSummary: currentBrand === 'bigbucks' ? 'BigBucks Balance' : 'BobBucks Balance',
+        biometricVerified: true,
+        bobbucks_token_id: 'tok_camera_biometric_verified',
+      });
+    }, CAMERA_VERIFIED_HOLD_MS);
+  }
+
   async function startCameraStream() {
+    clearCameraTimers();
     cameraErrorBoxEl.style.display = 'none';
+    cameraViewportWrapperEl.classList.remove('verified');
+    cameraVerifiedBarEl.classList.remove('running');
+
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       cameraErrorBoxEl.textContent = 'navigator.mediaDevices.getUserMedia is not available in this browser.';
       cameraErrorBoxEl.style.display = 'block';
@@ -329,13 +368,20 @@
       cameraPlaceholderEl.style.display = 'none';
       cameraViewportWrapperEl.classList.add('streaming');
       btnConfirmCameraPayEl.disabled = false;
-      updateCameraStatusUI('streaming', 'Camera Feed Active');
+      btnConfirmCameraTextEl.textContent = 'Scanning Face ID\u2026 (or click to verify now)';
+      updateCameraStatusUI('streaming', 'Scanning Face ID\u2026');
+
+      // Automatically transition to the fake "Face ID Verified" state after scanning for a few seconds.
+      cameraScanTimer = setTimeout(() => {
+        triggerCameraVerifiedSuccess();
+      }, CAMERA_SCAN_DURATION_MS);
     } catch (err) {
       console.error('getUserMedia failed:', err);
       cameraVideoEl.style.display = 'none';
       cameraPlaceholderEl.style.display = 'flex';
       cameraViewportWrapperEl.classList.remove('streaming');
       btnConfirmCameraPayEl.disabled = true;
+      btnConfirmCameraTextEl.textContent = 'Waiting for Camera Scan\u2026';
       updateCameraStatusUI('denied');
       cameraErrorBoxEl.innerHTML = `<strong>Camera Error (${err.name}):</strong> ${err.message || 'Could not start video stream.'}`;
       cameraErrorBoxEl.style.display = 'block';
@@ -343,6 +389,7 @@
   }
 
   function stopCameraStream() {
+    clearCameraTimers();
     if (activeCameraStream) {
       activeCameraStream.getTracks().forEach((track) => track.stop());
       activeCameraStream = null;
@@ -355,7 +402,7 @@
       cameraPlaceholderEl.style.display = 'flex';
     }
     if (cameraViewportWrapperEl) {
-      cameraViewportWrapperEl.classList.remove('streaming');
+      cameraViewportWrapperEl.classList.remove('streaming', 'verified');
     }
   }
 
@@ -374,8 +421,9 @@
     }
 
     btnConfirmCameraPayEl.disabled = true;
-    btnConfirmCameraTextEl.textContent = 'Verify Identity & Complete Payment';
+    btnConfirmCameraTextEl.textContent = 'Waiting for Camera Scan\u2026';
     cameraErrorBoxEl.style.display = 'none';
+    cameraViewportWrapperEl.classList.remove('verified');
     showView(viewCameraEl);
 
     // Check camera permission state first. Only auto-start the stream if already granted,
@@ -401,21 +449,6 @@
 
     // Fallback if permissions API is unavailable: wait for user click.
     updateCameraStatusUI('prompt');
-  }
-
-  function confirmCameraBiometricPayment() {
-    btnConfirmCameraPayEl.disabled = true;
-    btnConfirmCameraTextEl.textContent = 'Identity Verified \u2713 Completing Payment\u2026';
-
-    setTimeout(() => {
-      completePaymentWithDetails({
-        flow: 'camera_biometric',
-        flowLabel: 'Camera Biometric Authentication (navigator.mediaDevices)',
-        instrumentSummary: currentBrand === 'bigbucks' ? 'BigBucks Balance' : 'BobBucks Balance',
-        biometricVerified: true,
-        bobbucks_token_id: 'tok_camera_biometric_verified',
-      });
-    }, 900);
   }
 
   // --- Service Worker Communication & Lifecycle ---
@@ -474,7 +507,7 @@
     btn3dsBackEl.addEventListener('click', cancel3dsAndReturnToWallet);
 
     btnRequestCameraDialogEl.addEventListener('click', startCameraStream);
-    btnConfirmCameraPayEl.addEventListener('click', confirmCameraBiometricPayment);
+    btnConfirmCameraPayEl.addEventListener('click', triggerCameraVerifiedSuccess);
     btnCameraBackEl.addEventListener('click', () => {
       stopCameraStream();
       if (savedWindowSize) {
