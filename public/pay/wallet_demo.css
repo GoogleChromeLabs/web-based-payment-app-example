@@ -1,0 +1,874 @@
+/*
+ * BobBucks / BigBucks Demo Payment Handler Styles
+ */
+
+:root {
+  /* Default Theme: BobBucks (Forest Emerald & Warm Slate) */
+  --brand-primary: #0d7a5f;
+  --brand-primary-hover: #095e49;
+  --brand-primary-soft: #ecfdf5;
+  --brand-primary-border: #a7f3d0;
+  --brand-accent: #059669;
+  --brand-header-bg: #072921;
+  --brand-header-text: #f0fdf4;
+  --brand-badge-bg: rgba(16, 185, 129, 0.18);
+  --brand-badge-text: #6ee7b7;
+
+  /* Neutrals */
+  --bg-page: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --border-focus: #0d7a5f;
+
+  /* Semantic */
+  --danger-bg: #fef2f2;
+  --danger-text: #b91c1c;
+  --danger-border: #fecaca;
+  --warn-bg: #fffbeb;
+  --warn-text: #b45309;
+  --warn-border: #fde68a;
+  --success-bg: #f0fdf4;
+  --success-text: #15803d;
+  --success-border: #bbf7d0;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07);
+}
+
+/* BigBucks Theme Override (Deep Navy & Warm Gold/Amber) */
+body[data-brand="bigbucks"] {
+  --brand-primary: #1e3a8a;
+  --brand-primary-hover: #172554;
+  --brand-primary-soft: #eff6ff;
+  --brand-primary-border: #93c5fd;
+  --brand-accent: #d97706;
+  --brand-header-bg: #0f172a;
+  --brand-header-text: #f8fafc;
+  --brand-badge-bg: rgba(245, 158, 11, 0.2);
+  --brand-badge-text: #fcd34d;
+  --border-focus: #1e3a8a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* --- Wallet Header --- */
+.wallet-header {
+  background-color: var(--brand-header-bg);
+  color: var(--brand-header-text);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--brand-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: -0.03em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+body[data-brand="bigbucks"] .brand-logo {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  border: 1px solid rgba(252, 211, 77, 0.4);
+}
+
+.brand-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brand-tier-pill {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--brand-badge-bg);
+  color: var(--brand-badge-text);
+}
+
+.brand-subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.merchant-amount-summary {
+  text-align: right;
+}
+
+.merchant-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.68);
+  display: block;
+}
+
+.total-amount-display {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+/* --- Main Scrollable Workspace --- */
+.wallet-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.view-panel {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+.view-panel.active {
+  display: flex;
+}
+
+/* --- BigBucks Pro Banner (Visible in spacious/BigBucks mode) --- */
+.bigbucks-perks-bar {
+  display: none;
+  background: linear-gradient(90deg, #eff6ff 0%, #fefce8 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  color: #1e3a8a;
+}
+
+body[data-brand="bigbucks"] .bigbucks-perks-bar {
+  display: flex;
+}
+
+.perks-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.perks-highlight {
+  font-weight: 700;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.14);
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* --- Section Headings --- */
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.section-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* --- Payment Instrument Cards --- */
+.instrument-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.instrument-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+}
+
+.instrument-card:hover {
+  border-color: #cbd5e1;
+}
+
+.instrument-card.selected {
+  border-color: var(--brand-primary);
+  background-color: var(--brand-primary-soft);
+  box-shadow: 0 0 0 1px var(--brand-primary);
+}
+
+.instrument-radio {
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--brand-primary);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.instrument-icon {
+  width: 38px;
+  height: 28px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.instrument-icon.visa-card {
+  background: #1a1f71;
+  color: #ffffff;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+
+.instrument-icon.wallet-balance {
+  background: var(--brand-primary);
+  color: #ffffff;
+}
+
+.instrument-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.instrument-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.instrument-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.instrument-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.instrument-badge.badge-3ds {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.instrument-badge.badge-camera {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.instrument-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.instrument-flow-note {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.instrument-card.selected .instrument-flow-note {
+  color: var(--text-secondary);
+}
+
+/* --- Primary CTA Area --- */
+.action-area {
+  margin-top: auto;
+  padding-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-primary-action {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--brand-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
+}
+
+.btn-primary-action:hover {
+  background-color: var(--brand-primary-hover);
+}
+
+.btn-primary-action:active {
+  transform: translateY(1px);
+}
+
+.btn-primary-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary-action {
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-secondary-action:hover {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.action-caption {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* --- View 2: 3D-Secure (3DS) Challenge Frame --- */
+.threeds-frame {
+  background: var(--bg-surface);
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.threeds-topbar {
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #2563eb;
+}
+
+.threeds-bank-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bank-shield {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.bank-title {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.bank-subtitle {
+  font-size: 11px;
+  color: #94a3b8;
+  display: block;
+}
+
+.threeds-protocol-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #e2e8f0;
+}
+
+.threeds-content {
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  flex: 1;
+}
+
+@media (min-width: 560px) {
+  .threeds-content {
+    grid-template-columns: 1fr 1.15fr;
+    align-items: start;
+  }
+}
+
+.threeds-summary-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.threeds-summary-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+.threeds-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px dashed #cbd5e1;
+  font-size: 12.5px;
+}
+
+.threeds-detail-row:last-child {
+  border-bottom: none;
+}
+
+.threeds-detail-label {
+  color: var(--text-secondary);
+}
+
+.threeds-detail-val {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.threeds-resize-callout {
+  margin-top: 12px;
+  padding: 8px 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  color: #1e40af;
+  line-height: 1.4;
+}
+
+.threeds-challenge-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.threeds-challenge-heading {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.threeds-challenge-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.otp-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.otp-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.otp-autofill-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.otp-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 18px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  text-align: center;
+  border: 1.5px solid #94a3b8;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  background: #ffffff;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.threeds-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-3ds-approve {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-3ds-approve:hover {
+  background: #1d4ed8;
+}
+
+/* --- View 2b: 3DS Verified & Resized Back --- */
+.verified-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-lg);
+  padding: 24px 18px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.verified-check-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--success-bg);
+  border: 2px solid #22c55e;
+  color: #15803d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.verified-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.verified-subtitle {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  max-width: 280px;
+}
+
+.verified-progress-track {
+  width: 100%;
+  max-width: 220px;
+  height: 5px;
+  background: var(--bg-subtle);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.verified-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--brand-primary);
+  border-radius: 999px;
+  transition: width 2.1s linear;
+}
+
+.verified-progress-bar.running {
+  width: 100%;
+}
+
+/* --- View 3: Camera Biometric Authentication --- */
+.camera-auth-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  box-shadow: var(--shadow-sm);
+}
+
+.camera-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.camera-status-pill {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.camera-status-pill.status-granted {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.camera-status-pill.status-prompt {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border: 1px solid var(--warn-border);
+}
+
+.camera-status-pill.status-denied {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
+}
+
+.camera-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  height: 190px;
+  margin: 0 auto;
+  background: #0f172a;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #334155;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.camera-placeholder {
+  color: #94a3b8;
+  text-align: center;
+  padding: 16px;
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Biometric Viewfinder Overlay Brackets */
+.scan-reticle {
+  position: absolute;
+  inset: 18px 50px;
+  border: 2px dashed rgba(52, 211, 153, 0.55);
+  border-radius: 16px;
+  pointer-events: none;
+  display: none;
+}
+
+.camera-viewport-wrapper.streaming .scan-reticle {
+  display: block;
+}
+
+.scan-line {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  background: rgba(16, 185, 129, 0.85);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+  animation: biometricScan 2.2s ease-in-out infinite;
+}
+
+@keyframes biometricScan {
+  0%, 100% { top: 12%; }
+  50% { top: 86%; }
+}
+
+.camera-permission-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.camera-error-box {
+  display: none;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+.camera-actions-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Wallet Footer --- */
+.wallet-footer {
+  padding: 10px 18px;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.btn-cancel-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+
+.btn-cancel-link:hover {
+  color: var(--danger-text);
+  background: var(--danger-bg);
+}
+
+.window-size-readout {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+}

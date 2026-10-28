@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pay with BobBucks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/pay/wallet_demo.css">
+</head>
+<body data-brand="bobbucks">
+
+  <!-- Wallet Header -->
+  <header class="wallet-header">
+    <div class="brand-identity">
+      <div class="brand-logo" id="brand-logo">BB</div>
+      <div class="brand-title-group">
+        <div class="brand-name-row">
+          <span class="brand-name" id="brand-name">BobBucks</span>
+          <span class="brand-tier-pill" id="brand-tier-pill">Express</span>
+        </div>
+        <span class="brand-subtitle" id="brand-subtitle">Digital Wallet Checkout</span>
+      </div>
+    </div>
+    <div class="merchant-amount-summary">
+      <span class="merchant-label" id="merchant-name-display">Paying Canopy &amp; Co.</span>
+      <span class="total-amount-display" id="total-amount-display">$148.50</span>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="wallet-main">
+
+    <!-- VIEW 1: Select Payment Method -->
+    <section class="view-panel active" id="view-select" aria-label="Select payment method">
+      <div class="bigbucks-perks-bar">
+        <div class="perks-left">
+          <span>&#9733;</span>
+          <span>BigBucks Purchase Protection &amp; Instant Rewards active</span>
+        </div>
+        <span class="perks-highlight">+2% Cashback</span>
+      </div>
+
+      <div class="section-header">
+        <h1 class="section-title">Select Payment Method</h1>
+        <span class="section-hint">Choose verification flow</span>
+      </div>
+
+      <div class="instrument-list">
+        <!-- Option 1: Credit Card with 3D-Secure (Dynamic Resize) -->
+        <label class="instrument-card selected" id="instrument-card-3ds" for="radio-3ds">
+          <input type="radio" name="payment-instrument" id="radio-3ds" class="instrument-radio" value="3ds_card" checked>
+          <div class="instrument-icon visa-card">VISA</div>
+          <div class="instrument-body">
+            <div class="instrument-top-row">
+              <span class="instrument-title">Visa Signature &bull;&bull;&bull;&bull; 4242</span>
+              <span class="instrument-badge badge-3ds">&#128274; 3D-Secure</span>
+            </div>
+            <div class="instrument-meta">First National Bank &bull; Expires 09/28</div>
+            <div class="instrument-flow-note">
+              <span>&#8599;</span>
+              <span>Triggers bank 3D-Secure challenge &amp; dynamic window resize</span>
+            </div>
+          </div>
+        </label>
+
+        <!-- Option 2: Wallet Balance with Camera Biometric Auth -->
+        <label class="instrument-card" id="instrument-card-camera" for="radio-camera">
+          <input type="radio" name="payment-instrument" id="radio-camera" class="instrument-radio" value="camera_biometric">
+          <div class="instrument-icon wallet-balance">BB</div>
+          <div class="instrument-body">
+            <div class="instrument-top-row">
+              <span class="instrument-title" id="wallet-balance-title">BobBucks Balance ($500.00)</span>
+              <span class="instrument-badge badge-camera">&#128247; Camera Auth</span>
+            </div>
+            <div class="instrument-meta">Instant transfer &bull; $0.00 fee</div>
+            <div class="instrument-flow-note">
+              <span>&#9673;</span>
+              <span>Verifies identity using in-dialog camera access</span>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <div class="action-area">
+        <button type="button" class="btn-primary-action" id="btn-continue-payment">
+          <span id="btn-continue-text">Continue with Visa &bull;&bull;&bull;&bull; 4242</span>
+          <span>&rarr;</span>
+        </button>
+        <p class="action-caption" id="action-caption-text">
+          Next: Expand window for First National Bank 3D-Secure verification
+        </p>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Fake 3D-Secure (3DS) Challenge (Expanded Window) -->
+    <section class="view-panel" id="view-3ds" aria-label="3D-Secure verification">
+      <div class="threeds-frame">
+        <div class="threeds-topbar">
+          <div class="threeds-bank-brand">
+            <div class="bank-shield">FN</div>
+            <div>
+              <div class="bank-title">First National Bank</div>
+              <span class="bank-subtitle">Identity Check &bull; 3D-Secure 2.2</span>
+            </div>
+          </div>
+          <span class="threeds-protocol-tag">Verified by Visa</span>
+        </div>
+
+        <div class="threeds-content">
+          <div class="threeds-summary-box">
+            <div class="threeds-summary-title">Transaction Details</div>
+            <div class="threeds-detail-row">
+              <span class="threeds-detail-label">Merchant</span>
+              <span class="threeds-detail-val" id="threeds-merchant">Canopy &amp; Co.</span>
+            </div>
+            <div class="threeds-detail-row">
+              <span class="threeds-detail-label">Amount</span>
+              <span class="threeds-detail-val" id="threeds-amount">$148.50 USD</span>
+            </div>
+            <div class="threeds-detail-row">
+              <span class="threeds-detail-label">Card Number</span>
+              <span class="threeds-detail-val">&bull;&bull;&bull;&bull; 4242</span>
+            </div>
+            <div class="threeds-detail-row">
+              <span class="threeds-detail-label">Date</span>
+              <span class="threeds-detail-val" id="threeds-date">Today</span>
+            </div>
+            <div class="threeds-resize-callout">
+              <strong>Dynamic Resize Active:</strong> The payment handler called
+              <code>window.resizeTo()</code> to fit this 3D-Secure challenge and will restore the original size once verified.
+            </div>
+          </div>
+
+          <div class="threeds-challenge-box">
+            <h2 class="threeds-challenge-heading">Enter One-Time Passcode</h2>
+            <p class="threeds-challenge-desc">
+              We sent a 6-digit security code to your registered phone ending in <strong>&bull;&bull;&bull;&bull; 0194</strong> to authorize this purchase.
+            </p>
+
+            <div class="otp-input-group">
+              <div class="otp-label-row">
+                <label for="otp-code-input">Verification Code</label>
+                <button type="button" class="otp-autofill-btn" id="btn-otp-autofill">Reset demo code (849201)</button>
+              </div>
+              <input type="text" id="otp-code-input" class="otp-input" value="849201" maxlength="6" autocomplete="one-time-code" aria-label="6-digit verification code">
+            </div>
+
+            <div class="threeds-actions">
+              <button type="button" class="btn-3ds-approve" id="btn-3ds-approve">
+                Verify &amp; Authorize Payment
+              </button>
+              <button type="button" class="btn-secondary-action" id="btn-3ds-back">
+                &larr; Cancel &amp; Return to Wallet
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2b: 3DS Verified & Window Restored -->
+    <section class="view-panel" id="view-3ds-verified" aria-label="3D-Secure verified">
+      <div class="verified-card">
+        <div class="verified-check-circle">&#10003;</div>
+        <h2 class="verified-title">3D-Secure Verified</h2>
+        <p class="verified-subtitle">
+          Window restored to original size via <code>window.resizeTo()</code>. Returning payment confirmation to merchant&hellip;
+        </p>
+        <div class="verified-progress-track">
+          <div class="verified-progress-bar" id="verified-progress-bar"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Camera-Based Biometric Verification -->
+    <section class="view-panel" id="view-camera" aria-label="Camera biometric authentication">
+      <div class="camera-auth-card">
+        <div class="camera-top-row">
+          <h2 class="section-title">Biometric Camera Verification</h2>
+          <span class="camera-status-pill" id="camera-status-pill">Checking camera&hellip;</span>
+        </div>
+
+        <div class="camera-viewport-wrapper" id="camera-viewport-wrapper">
+          <video id="camera-video" class="camera-video" autoplay playsinline muted></video>
+          <div class="scan-reticle">
+            <div class="scan-line"></div>
+          </div>
+          <div class="camera-placeholder" id="camera-placeholder">
+            <span>&#128247;</span>
+            <span id="camera-placeholder-text">Starting camera stream for identity verification&hellip;</span>
+          </div>
+        </div>
+
+        <div class="camera-permission-actions">
+          <button type="button" class="btn-secondary-action" id="btn-request-camera-dialog" style="display: none;">
+            Grant Camera Access in Dialog
+          </button>
+          <button type="button" class="btn-secondary-action" id="btn-request-camera-popup" style="display: none;">
+            Grant Camera Access in Popup
+          </button>
+        </div>
+
+        <div class="camera-error-box" id="camera-error-box"></div>
+
+        <div class="camera-actions-footer">
+          <button type="button" class="btn-primary-action" id="btn-confirm-camera-pay">
+            <span id="btn-confirm-camera-text">Verify Identity &amp; Complete Payment</span>
+          </button>
+          <button type="button" class="btn-secondary-action" id="btn-camera-back">
+            &larr; Back to Payment Methods
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Wallet Footer -->
+  <footer class="wallet-footer">
+    <button type="button" class="btn-cancel-link" id="btn-cancel-payment">Cancel payment</button>
+    <span class="window-size-readout" id="window-size-readout" title="Current Payment Handler web contents size">-- &times; -- px</span>
+  </footer>
+
+  <script src="/pay/wallet_demo.js"></script>
+</body>
+</html>

@@ -103,10 +103,14 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
   }
 
   let url = 'https://bobbucks.dev/pay';
-  // The methodData here represents what the merchant supports. We could have a
-  // payment selection screen, but for this simple demo if we see alipay in the list
-  // we send the user through the alipay flow.
-  if (e.methodData[0].supportedMethods[0].indexOf('alipay') !== -1) {
+  const page = e.methodData?.[0]?.data?.page;
+  // Allow the merchant to specify which HTML page under /pay/ to open.
+  if (typeof page === 'string' && /^[a-zA-Z0-9_-]+\.html$/.test(page)) {
+    url += '/' + page;
+  } else if (e.methodData[0].supportedMethods[0].indexOf('alipay') !== -1) {
+    // The methodData here represents what the merchant supports. We could have a
+    // payment selection screen, but for this simple demo if we see alipay in the list
+    // we send the user through the alipay flow.
     url += '/alipay.html';
   }
 
