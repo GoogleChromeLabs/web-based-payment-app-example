@@ -14,11 +14,10 @@
   // Simulated network latency for 3D-Secure challenge loading (+0.5s) and OTP verification (+0.5s).
   const THREEDS_LOAD_LATENCY_MS = 1700;
   const THREEDS_VERIFY_LATENCY_MS = 1600;
-  const THREEDS_SUCCESS_HOLD_MS = 650;
+  const THREEDS_SUCCESS_HOLD_MS = 1800;
 
-  // Camera scan duration before triggering fake "Face ID Verified" state, and hold duration before completing.
+  // Camera scan duration before triggering fake "Face ID Verified" state and enabling the button.
   const CAMERA_SCAN_DURATION_MS = 2600;
-  const CAMERA_VERIFIED_HOLD_MS = 1700;
 
   let paymentRequestClient = null;
   let methodData = [];
@@ -29,10 +28,9 @@
 
   // Stores the window size prior to dynamic resize so we can restore it on Cancel/Back.
   let savedWindowSize = null;
-  // Active MediaStream and timers for camera authentication.
+  // Active MediaStream and timer for camera authentication.
   let activeCameraStream = null;
   let cameraScanTimer = null;
-  let cameraCompleteTimer = null;
 
   // --- DOM Elements ---
   const brandLogoEl = document.getElementById('brand-logo');
@@ -74,7 +72,6 @@
   const cameraStatusPillEl = document.getElementById('camera-status-pill');
   const cameraViewportWrapperEl = document.getElementById('camera-viewport-wrapper');
   const cameraVideoEl = document.getElementById('camera-video');
-  const cameraVerifiedBarEl = document.getElementById('camera-verified-bar');
   const cameraPlaceholderEl = document.getElementById('camera-placeholder');
   const cameraPlaceholderTextEl = document.getElementById('camera-placeholder-text');
   const btnRequestCameraDialogEl = document.getElementById('btn-request-camera-dialog');
@@ -289,10 +286,6 @@
       clearTimeout(cameraScanTimer);
       cameraScanTimer = null;
     }
-    if (cameraCompleteTimer) {
-      clearTimeout(cameraCompleteTimer);
-      cameraCompleteTimer = null;
-    }
   }
 
   function updateCameraStatusUI(state, customText) {
@@ -324,34 +317,32 @@
   function triggerCameraVerifiedSuccess() {
     clearCameraTimers();
     cameraViewportWrapperEl.classList.add('verified');
-    cameraVerifiedBarEl.classList.remove('running');
     updateCameraStatusUI('verified', '\u2713 Face ID Verified');
 
+    // Enable the primary button so the user can complete the payment when ready.
     btnConfirmCameraPayEl.disabled = false;
-    btnConfirmCameraTextEl.textContent = '\u2713 Identity Verified \u2014 Completing Payment\u2026';
+    btnConfirmCameraTextEl.textContent = `Complete Payment (${formatCurrency(totalAmount)})`;
+  }
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        cameraVerifiedBarEl.classList.add('running');
-      });
+  function confirmCameraBiometricPayment() {
+    if (btnConfirmCameraPayEl.disabled) return;
+    btnConfirmCameraPayEl.disabled = true;
+    btnConfirmCameraTextEl.textContent = 'Completing Payment\u2026';
+
+    completePaymentWithDetails({
+      flow: 'camera_biometric',
+      flowLabel: 'Camera Biometric Authentication (navigator.mediaDevices)',
+      instrumentSummary: currentBrand === 'bigbucks' ? 'BigBucks Balance' : 'BobBucks Balance',
+      biometricVerified: true,
+      bobbucks_token_id: 'tok_camera_biometric_verified',
     });
-
-    cameraCompleteTimer = setTimeout(() => {
-      completePaymentWithDetails({
-        flow: 'camera_biometric',
-        flowLabel: 'Camera Biometric Authentication (navigator.mediaDevices)',
-        instrumentSummary: currentBrand === 'bigbucks' ? 'BigBucks Balance' : 'BobBucks Balance',
-        biometricVerified: true,
-        bobbucks_token_id: 'tok_camera_biometric_verified',
-      });
-    }, CAMERA_VERIFIED_HOLD_MS);
   }
 
   async function startCameraStream() {
     clearCameraTimers();
     cameraErrorBoxEl.style.display = 'none';
     cameraViewportWrapperEl.classList.remove('verified');
-    cameraVerifiedBarEl.classList.remove('running');
+    btnConfirmCameraPayEl.disabled = true;
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       cameraErrorBoxEl.textContent = 'navigator.mediaDevices.getUserMedia is not available in this browser.';
@@ -367,8 +358,8 @@
       cameraVideoEl.style.display = 'block';
       cameraPlaceholderEl.style.display = 'none';
       cameraViewportWrapperEl.classList.add('streaming');
-      btnConfirmCameraPayEl.disabled = false;
-      btnConfirmCameraTextEl.textContent = 'Scanning Face ID\u2026 (or click to verify now)';
+      btnConfirmCameraPayEl.disabled = true;
+      btnConfirmCameraTextEl.textContent = 'Scanning Face ID\u2026';
       updateCameraStatusUI('streaming', 'Scanning Face ID\u2026');
 
       // Automatically transition to the fake "Face ID Verified" state after scanning for a few seconds.
@@ -507,7 +498,7 @@
     btn3dsBackEl.addEventListener('click', cancel3dsAndReturnToWallet);
 
     btnRequestCameraDialogEl.addEventListener('click', startCameraStream);
-    btnConfirmCameraPayEl.addEventListener('click', triggerCameraVerifiedSuccess);
+    btnConfirmCameraPayEl.addEventListener('click', confirmCameraBiometricPayment);
     btnCameraBackEl.addEventListener('click', () => {
       stopCameraStream();
       if (savedWindowSize) {
