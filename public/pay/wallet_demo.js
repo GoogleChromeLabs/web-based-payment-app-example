@@ -8,6 +8,12 @@
 
   // Target dimensions when expanding the window for the embedded 3D-Secure challenge.
   const DEFAULT_3DS_SIZE = { width: 720, height: 640 };
+  // Minimum dimensions for the camera authentication view so it never scrolls.
+  const MIN_CAMERA_VIEW_SIZE = { width: 460, height: 560 };
+
+  // Simulated network latency for 3D-Secure challenge loading and OTP verification.
+  const THREEDS_LOAD_LATENCY_MS = 1200;
+  const THREEDS_VERIFY_LATENCY_MS = 1100;
   // Pause duration (ms) after resizing back from 3DS before closing the window.
   const POST_3DS_COMPLETE_DELAY_MS = 2200;
 
@@ -18,7 +24,7 @@
   let merchantName = 'Canopy & Co.';
   let selectedInstrument = '3ds_card';
 
-  // Stores the window size prior to the 3DS resize so we can restore it.
+  // Stores the window size prior to dynamic resize so we can restore it.
   let savedWindowSize = null;
   // Active MediaStream for camera authentication.
   let activeCameraStream = null;
@@ -30,6 +36,8 @@
   const brandSubtitleEl = document.getElementById('brand-subtitle');
   const merchantNameDisplayEl = document.getElementById('merchant-name-display');
   const totalAmountDisplayEl = document.getElementById('total-amount-display');
+  const selectSectionTitleEl = document.getElementById('select-section-title');
+  const selectSectionHintEl = document.getElementById('select-section-hint');
   const walletBalanceTitleEl = document.getElementById('wallet-balance-title');
 
   const viewSelectEl = document.getElementById('view-select');
@@ -45,6 +53,10 @@
   const btnContinueTextEl = document.getElementById('btn-continue-text');
   const actionCaptionTextEl = document.getElementById('action-caption-text');
 
+  const threedsLoadingStateEl = document.getElementById('threeds-loading-state');
+  const threedsLoadingTitleEl = document.getElementById('threeds-loading-title');
+  const threedsLoadingSubtitleEl = document.getElementById('threeds-loading-subtitle');
+  const threedsChallengeContentEl = document.getElementById('threeds-challenge-content');
   const threedsMerchantEl = document.getElementById('threeds-merchant');
   const threedsAmountEl = document.getElementById('threeds-amount');
   const threedsDateEl = document.getElementById('threeds-date');
@@ -60,7 +72,6 @@
   const cameraPlaceholderEl = document.getElementById('camera-placeholder');
   const cameraPlaceholderTextEl = document.getElementById('camera-placeholder-text');
   const btnRequestCameraDialogEl = document.getElementById('btn-request-camera-dialog');
-  const btnRequestCameraPopupEl = document.getElementById('btn-request-camera-popup');
   const cameraErrorBoxEl = document.getElementById('camera-error-box');
   const btnConfirmCameraPayEl = document.getElementById('btn-confirm-camera-pay');
   const btnConfirmCameraTextEl = document.getElementById('btn-confirm-camera-text');
@@ -119,14 +130,23 @@
       brandNameEl.textContent = 'BigBucks';
       brandTierPillEl.textContent = 'Wallet Pro';
       brandSubtitleEl.textContent = 'Expanded Checkout \u2022 Buyer Protection';
+      selectSectionTitleEl.textContent = 'Select Payment Method';
+      selectSectionHintEl.textContent = 'Choose verification flow';
       walletBalanceTitleEl.textContent = 'BigBucks Balance ($500.00)';
+      // Default to the signature Camera Face ID option in BigBucks Pro
+      radioCameraEl.checked = true;
+      radio3dsEl.checked = false;
     } else {
       document.title = 'Pay with BobBucks';
       brandLogoEl.textContent = 'BB';
       brandNameEl.textContent = 'BobBucks';
       brandTierPillEl.textContent = 'Express';
-      brandSubtitleEl.textContent = 'Compact Digital Wallet';
-      walletBalanceTitleEl.textContent = 'BobBucks Balance ($500.00)';
+      brandSubtitleEl.textContent = 'Compact One-Click Checkout';
+      selectSectionTitleEl.textContent = 'Payment Method';
+      selectSectionHintEl.textContent = 'Express Card';
+      // Compact BobBucks only offers the 3DS card option
+      radio3dsEl.checked = true;
+      radioCameraEl.checked = false;
     }
 
     const formattedTotal = formatCurrency(totalAmount);
@@ -139,15 +159,22 @@
       day: 'numeric',
       year: 'numeric',
     });
+
+    updateInstrumentSelectionUI();
   }
 
   function updateInstrumentSelectionUI() {
-    selectedInstrument = radioCameraEl.checked ? 'camera_biometric' : '3ds_card';
+    if (currentBrand !== 'bigbucks') {
+      selectedInstrument = '3ds_card';
+      radio3dsEl.checked = true;
+    } else {
+      selectedInstrument = radioCameraEl.checked ? 'camera_biometric' : '3ds_card';
+    }
 
     if (selectedInstrument === '3ds_card') {
       card3dsEl.classList.add('selected');
       cardCameraEl.classList.remove('selected');
-      btnContinueTextEl.textContent = 'Continue with Visa \u2022\u2022\u2022\u2022 4242';
+      btnContinueTextEl.textContent = 'Continue with Apex \u2022\u2022\u2022\u2022 4242';
       actionCaptionTextEl.textContent =
           'Next: Expands window via window.resizeTo() for 3D-Secure verification';
     } else {
@@ -182,7 +209,7 @@
     window.close();
   }
 
-  // --- Flow 1: Fake 3D-Secure (3DS) with Dynamic Window Resize ---
+  // --- Flow 1: Fake 3D-Secure (3DS) with Dynamic Window Resize & Simulated Latency ---
 
   function start3dsFlow() {
     // Save current window dimensions before expanding for 3DS.
@@ -195,8 +222,19 @@
     const targetWidth = (customData.threeDsSize && customData.threeDsSize.width) || DEFAULT_3DS_SIZE.width;
     const targetHeight = (customData.threeDsSize && customData.threeDsSize.height) || DEFAULT_3DS_SIZE.height;
 
+    // Show loading spinner first while resizing the window
+    threedsLoadingTitleEl.textContent = 'Connecting to Acme Issuing Bank\u2026';
+    threedsLoadingSubtitleEl.textContent = 'Loading 3D-Secure 2.2 verification challenge';
+    threedsLoadingStateEl.style.display = 'flex';
+    threedsChallengeContentEl.style.display = 'none';
+
     showView(view3dsEl);
     window.resizeTo(targetWidth, targetHeight);
+
+    setTimeout(() => {
+      threedsLoadingStateEl.style.display = 'none';
+      threedsChallengeContentEl.style.display = '';
+    }, THREEDS_LOAD_LATENCY_MS);
   }
 
   function cancel3dsAndReturnToWallet() {
@@ -212,30 +250,38 @@
       otpInputEl.value = '849201';
     }
 
-    // Restore window back to its initial dimensions before completing payment.
-    const restoreWidth = savedWindowSize ? savedWindowSize.width : 400;
-    const restoreHeight = savedWindowSize ? savedWindowSize.height : 480;
-    window.resizeTo(restoreWidth, restoreHeight);
-
-    verifiedProgressBarEl.classList.remove('running');
-    showView(view3dsVerifiedEl);
-
-    // Trigger progress bar animation on next frame.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        verifiedProgressBarEl.classList.add('running');
-      });
-    });
+    // Show simulated bank verification spinner before resizing back
+    threedsLoadingTitleEl.textContent = 'Verifying security code\u2026';
+    threedsLoadingSubtitleEl.textContent = 'Confirming one-time passcode with Acme Issuing Bank';
+    threedsChallengeContentEl.style.display = 'none';
+    threedsLoadingStateEl.style.display = 'flex';
 
     setTimeout(() => {
-      completePaymentWithDetails({
-        flow: '3ds_card',
-        flowLabel: '3D-Secure Card Verification (with dynamic window.resizeTo)',
-        instrumentSummary: 'Visa Signature \u2022\u2022\u2022\u2022 4242',
-        threeDSecureStatus: 'authenticated',
-        bobbucks_token_id: 'tok_3ds_visa_4242_verified',
+      // Restore window back to its initial dimensions before completing payment.
+      const restoreWidth = savedWindowSize ? savedWindowSize.width : 400;
+      const restoreHeight = savedWindowSize ? savedWindowSize.height : 350;
+      window.resizeTo(restoreWidth, restoreHeight);
+
+      verifiedProgressBarEl.classList.remove('running');
+      showView(view3dsVerifiedEl);
+
+      // Trigger progress bar animation on next frame.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          verifiedProgressBarEl.classList.add('running');
+        });
       });
-    }, POST_3DS_COMPLETE_DELAY_MS);
+
+      setTimeout(() => {
+        completePaymentWithDetails({
+          flow: '3ds_card',
+          flowLabel: '3D-Secure Card Verification (with dynamic window.resizeTo)',
+          instrumentSummary: 'Apex Card \u2022\u2022\u2022\u2022 4242',
+          threeDSecureStatus: 'authenticated',
+          bobbucks_token_id: 'tok_3ds_apex_4242_verified',
+        });
+      }, POST_3DS_COMPLETE_DELAY_MS);
+    }, THREEDS_VERIFY_LATENCY_MS);
   }
 
   // --- Flow 2: Camera-Based Biometric Verification ---
@@ -246,36 +292,23 @@
       cameraStatusPillEl.classList.add('status-granted');
       cameraStatusPillEl.textContent = customText || 'Camera Active';
       btnRequestCameraDialogEl.style.display = 'none';
-      btnRequestCameraPopupEl.style.display = 'none';
     } else if (state === 'prompt') {
       cameraStatusPillEl.classList.add('status-prompt');
-      cameraStatusPillEl.textContent = 'Permission Prompt Required';
+      cameraStatusPillEl.textContent = 'Permission Required';
+      cameraPlaceholderTextEl.textContent =
+          'Click below to allow camera access and verify your identity.';
+      btnRequestCameraDialogEl.textContent = 'Allow Camera Access';
       btnRequestCameraDialogEl.style.display = 'inline-block';
-      btnRequestCameraPopupEl.style.display = 'inline-block';
     } else if (state === 'denied') {
       cameraStatusPillEl.classList.add('status-denied');
-      cameraStatusPillEl.textContent = 'Camera Permission Denied';
+      cameraStatusPillEl.textContent = 'Permission Denied';
+      cameraPlaceholderTextEl.textContent =
+          'Camera permission was denied or dismissed. Click below to retry.';
+      btnRequestCameraDialogEl.textContent = 'Retry Camera Access';
       btnRequestCameraDialogEl.style.display = 'inline-block';
-      btnRequestCameraPopupEl.style.display = 'inline-block';
     } else {
       cameraStatusPillEl.textContent = customText || `Camera: ${state}`;
-    }
-  }
-
-  async function checkCameraPermissionState() {
-    if (navigator.permissions && navigator.permissions.query) {
-      try {
-        const status = await navigator.permissions.query({ name: 'camera' });
-        updateCameraStatusUI(status.state);
-        status.onchange = () => {
-          updateCameraStatusUI(status.state);
-          if (status.state === 'granted' && !activeCameraStream) {
-            startCameraStream();
-          }
-        };
-      } catch (err) {
-        console.warn('Camera permission query error:', err);
-      }
+      btnRequestCameraDialogEl.style.display = 'inline-block';
     }
   }
 
@@ -295,16 +328,17 @@
       cameraVideoEl.style.display = 'block';
       cameraPlaceholderEl.style.display = 'none';
       cameraViewportWrapperEl.classList.add('streaming');
+      btnConfirmCameraPayEl.disabled = false;
       updateCameraStatusUI('streaming', 'Camera Feed Active');
     } catch (err) {
       console.error('getUserMedia failed:', err);
       cameraVideoEl.style.display = 'none';
       cameraPlaceholderEl.style.display = 'flex';
-      cameraPlaceholderTextEl.textContent = 'Camera stream not active. Grant permission below to preview.';
       cameraViewportWrapperEl.classList.remove('streaming');
+      btnConfirmCameraPayEl.disabled = true;
+      updateCameraStatusUI('denied');
       cameraErrorBoxEl.innerHTML = `<strong>Camera Error (${err.name}):</strong> ${err.message || 'Could not start video stream.'}`;
       cameraErrorBoxEl.style.display = 'block';
-      await checkCameraPermissionState();
     }
   }
 
@@ -325,23 +359,48 @@
     }
   }
 
-  function openCameraPopupFallback() {
-    const popup = window.open('/pay/camera_access.html', 'camera_access_popup', 'width=500,height=400');
-    if (popup) {
-      const timer = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(timer);
-          checkCameraPermissionState();
-          startCameraStream();
-        }
-      }, 500);
-    }
-  }
+  async function startCameraAuthFlow() {
+    savedWindowSize = {
+      width: window.innerWidth,
+      height: window.innerHeight,
+    };
 
-  function startCameraAuthFlow() {
+    // If opened in a short/compact window, resize taller so the camera view & any errors fit without scrolling.
+    if (window.innerHeight < MIN_CAMERA_VIEW_SIZE.height || window.innerWidth < MIN_CAMERA_VIEW_SIZE.width) {
+      window.resizeTo(
+        Math.max(window.innerWidth, MIN_CAMERA_VIEW_SIZE.width),
+        Math.max(window.innerHeight, MIN_CAMERA_VIEW_SIZE.height)
+      );
+    }
+
+    btnConfirmCameraPayEl.disabled = true;
+    btnConfirmCameraTextEl.textContent = 'Verify Identity & Complete Payment';
+    cameraErrorBoxEl.style.display = 'none';
     showView(viewCameraEl);
-    checkCameraPermissionState();
-    startCameraStream();
+
+    // Check camera permission state first. Only auto-start the stream if already granted,
+    // so we don't immediately cover the dialog with a browser permission prompt before the user clicks.
+    if (navigator.permissions && navigator.permissions.query) {
+      try {
+        const status = await navigator.permissions.query({ name: 'camera' });
+        updateCameraStatusUI(status.state);
+        status.onchange = () => {
+          updateCameraStatusUI(status.state);
+          if (status.state === 'granted' && !activeCameraStream) {
+            startCameraStream();
+          }
+        };
+        if (status.state === 'granted') {
+          await startCameraStream();
+        }
+        return;
+      } catch (err) {
+        console.warn('Camera permission query error:', err);
+      }
+    }
+
+    // Fallback if permissions API is unavailable: wait for user click.
+    updateCameraStatusUI('prompt');
   }
 
   function confirmCameraBiometricPayment() {
@@ -356,7 +415,7 @@
         biometricVerified: true,
         bobbucks_token_id: 'tok_camera_biometric_verified',
       });
-    }, 800);
+    }, 900);
   }
 
   // --- Service Worker Communication & Lifecycle ---
@@ -388,7 +447,6 @@
 
   function init() {
     applyBrandingAndDetails();
-    updateInstrumentSelectionUI();
     updateWindowSizeReadout();
 
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
@@ -416,10 +474,12 @@
     btn3dsBackEl.addEventListener('click', cancel3dsAndReturnToWallet);
 
     btnRequestCameraDialogEl.addEventListener('click', startCameraStream);
-    btnRequestCameraPopupEl.addEventListener('click', openCameraPopupFallback);
     btnConfirmCameraPayEl.addEventListener('click', confirmCameraBiometricPayment);
     btnCameraBackEl.addEventListener('click', () => {
       stopCameraStream();
+      if (savedWindowSize) {
+        window.resizeTo(savedWindowSize.width, savedWindowSize.height);
+      }
       showView(viewSelectEl);
     });
 
