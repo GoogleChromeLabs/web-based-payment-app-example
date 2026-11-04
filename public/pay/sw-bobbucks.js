@@ -17,43 +17,6 @@ const REJECT_BEFORE_OPEN_WINDOW = 'reject_before_open_window';
 const RESOLVE_AFTER_OPEN_WINDOW = 'resolve_after_open_window';
 const REJECT_AFTER_OPEN_WINDOW = 'reject_after_open_window';
 
-/**
- * A utility class to resolve/reject a Promise from outside its constructor.
- * This is useful for bridging event-driven APIs with Promises. In this service
- * worker, we need to resolve the paymentrequest event's promise when we receive
- * a 'message' from the payment app window.
- */
-function PromiseResolver() {
-  /** @private {function(T=): void} */
-  this.resolve_;
-
-  /** @private {function(*=): void} */
-  this.reject_;
-
-  /** @private {!Promise<T>} */
-  this.promise_ = new Promise(function(resolve, reject) {
-    this.resolve_ = resolve;
-    this.reject_ = reject;
-  }.bind(this));
-}
-
-PromiseResolver.prototype = {
-  /** @return {!Promise<T>} */
-  get promise() {
-    return this.promise_;
-  },
-
-  /** @return {function(T=): void} */
-  get resolve() {
-    return this.resolve_;
-  },
-
-  /** @return {function(*=): void} */
-  get reject() {
-    return this.reject_;
-  },
-};
-
 function createMockPaymentResponse() {
   return {
     methodName: 'https://bobbucks.dev/pay',
@@ -77,6 +40,9 @@ function resetCurrentPayment() {
     clearTimeout(currentPayment.delayTimeoutId);
     currentPayment.delayTimeoutId = null;
   }
+  if (currentPayment.resolver) {
+    currentPayment.resolver.reject(new Error('Replaced by a new payment request'));
+  }
   currentPayment.paymentRequestEvent = null;
   currentPayment.resolver = null;
 }
@@ -91,7 +57,7 @@ self.addEventListener(PAYMENT_REQUEST_EVENT, async (e) => {
 
   // Stash the event and a resolver for later.
   currentPayment.paymentRequestEvent = e;
-  currentPayment.resolver = new PromiseResolver();
+  currentPayment.resolver = Promise.withResolvers();
   e.respondWith(currentPayment.resolver.promise);
 
   const appType = e.methodData?.[0]?.data?.appType;

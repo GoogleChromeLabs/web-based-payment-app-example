@@ -46,7 +46,6 @@
     };
 
     paymentRequestClient.postMessage(paymentAppResponse);
-    window.close();
   }
 
   function handleServiceWorkerMessage(e) {
@@ -128,18 +127,12 @@
     // See https://github.com/w3c/web-based-payment-handler/pull/429 for the proposed
     // error type to indicate internal payment app error.
     paymentRequestClient.postMessage(new DOMException("Internal app error", "OperationError"));
-    window.close();
   }
 
   function cancel() {
-    if (!paymentRequestClient) {
-      window.close();
-      return;
-    }
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage('The payment request is cancelled by user');
     }
-    window.close();
   }
 
   function init() {
